@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Alert, Button, CircularProgress, TextField } from '@mui/material';
 import { ErrorOutlineOutlined as ErrorOutlineOutlinedIcon } from '@mui/icons-material';
 import _ from 'lodash';
@@ -19,7 +19,7 @@ const Login = () => {
   const authStatusText = useSelector(state => state.auth.authStatusText);
   const isAuthenticating = useSelector(state => state.auth.isAuthenticating);
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const styles = useStyles();
 
   const closeModal = useCallback(() => {
@@ -30,9 +30,9 @@ const Login = () => {
   const handleLogin = useCallback(
     () =>
       dispatch(loginUser(username, password)).then(response => {
-        if (response.type === 'LOGIN_SUCCESS') history.push('/artifacts');
+        if (response.type === 'LOGIN_SUCCESS') navigate('/artifacts');
       }),
-    [dispatch, history, username, password]
+    [dispatch, navigate, username, password]
   );
 
   const handleChangeUsername = useCallback(event => {
