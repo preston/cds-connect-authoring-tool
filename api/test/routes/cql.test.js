@@ -2,18 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import unzipper from 'unzipper';
 import request from 'supertest';
+import nock from 'nock';
 import sinon from 'sinon';
-
-const sandbox = sinon.createSandbox();
-const { fake, mock, replace, match } = sandbox;
-
-import * as cqlHandler from '../../src/handlers/cqlHandler.js';
-// const { __Rewire__, __ResetDependency__ } = cqlHandler;
-
-import { setupExpressApp, importChaiExpect } from '../utils.js';
 import Artifact from '../../src/models/artifact.js';
 import CQLLibrary from '../../src/models/cqlLibrary.js';
-// import SimpleArtifact from './fixtures/SimpleArtifact.json' with { type: 'json' };
+import { expect } from 'chai';
+import { setupExpressApp } from '../utils.js';
 import { fileURLToPath } from 'url';
 
 const filename = fileURLToPath(import.meta.url);
@@ -25,25 +19,31 @@ const simpleArtifactWithDataModel = Object.assign({ dataModel: { name: 'FHIR', v
 // TODO: Tests for artifacts with external CQL libraries
 // TODO: More tests when CQL-to-ELM returns ELM w/ errors in annotations
 
+const sandbox = sinon.createSandbox();
+
 describe('Route: /authoring/api/cql/', () => {
-  let app, options, expect;
+  let app, options;
 
   before(async () => {
     [app, options] = setupExpressApp();
-    expect = await importChaiExpect();
   });
 
   afterEach(() => {
+    nock.cleanAll();
     sandbox.restore();
     options.reset();
   });
 
   describe('POST', () => {
     it('should return a zip file with compiled ELM for authenticated users', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact();
-      mockArtifactFindOneForSimpleArtifact();
-      mockMakeCQLtoELMRequestForSimpleArtifact();
+      options.user = { uid: 'bob' };
+
+      // Mock ONLY database calls - all CQL logic runs real
+      mockDatabaseForSuccess();
+      
+      // Mock ONLY external HTTP services - all internal logic runs real  
+      mockExternalServicesForSuccess();
+
       request(app)
         .post('/authoring/api/cql/')
         .send(simpleArtifactWithDataModel)
@@ -54,6 +54,8 @@ describe('Route: /authoring/api/cql/', () => {
         .parse(binaryParser)
         .end(function (err, res) {
           if (err) return done(err);
+          
+          // Test the actual ZIP (not mocked)
           unzipper.Open.buffer(res.body)
             .then(directory => {
               const files = directory.files.map(f => f.path);
@@ -72,10 +74,15 @@ describe('Route: /authoring/api/cql/', () => {
     });
 
     it('should still return a zip file even if CQL formatting fails', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact(new Error('ConnectionError'));
-      mockArtifactFindOneForSimpleArtifact();
-      mockMakeCQLtoELMRequestForSimpleArtifact();
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      
+      // Mock formatter to fail, but translator to succeed
+      mockCQLFormatterForError()
+        
+      mockCQLTranslatorForSuccess();
+
       request(app)
         .post('/authoring/api/cql/')
         .send(simpleArtifactWithDataModel)
@@ -104,10 +111,19 @@ describe('Route: /authoring/api/cql/', () => {
     });
 
     it('should return a zip without the CPG library if there is an error getting artifact details', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact();
-      mockArtifactFindOneForSimpleArtifact(new Error('Connection Error'));
-      mockMakeCQLtoELMRequestForSimpleArtifact();
+      options.user = { uid: 'bob' };
+
+      // Mock CQLLibrary to succeed, but Artifact to fail
+      sandbox.stub(CQLLibrary, 'find').returns({
+        exec: sandbox.stub().resolves([])
+      });
+      
+      sandbox.stub(Artifact, 'findOne').returns({
+        exec: sandbox.stub().rejects(new Error('Connection Error'))
+      });
+
+      mockExternalServicesForSuccess();
+
       request(app)
         .post('/authoring/api/cql/')
         .send(simpleArtifactWithDataModel)
@@ -121,6 +137,7 @@ describe('Route: /authoring/api/cql/', () => {
           unzipper.Open.buffer(res.body)
             .then(directory => {
               const files = directory.files.map(f => f.path);
+              // Should have 6 files instead of 7 (no CPG library)
               expect(files).to.have.length(6);
               expect(files).to.contain('SimpleArtifact.cql');
               expect(files).to.contain('SimpleArtifact.json');
@@ -135,7 +152,13 @@ describe('Route: /authoring/api/cql/', () => {
     });
 
     it('should return HTTP 500 if there is an error finding external artifacts', done => {
-      mockCQLLibraryFindForSimpleArtifact(new Error('Connection Error'));
+      options.user = { uid: 'bob' };
+
+      // Mock database to fail
+      sandbox.stub(CQLLibrary, 'find').returns({
+        exec: sandbox.stub().rejects(new Error('Connection Error'))
+      });
+
       request(app)
         .post('/authoring/api/cql/')
         .send(simpleArtifactWithDataModel)
@@ -144,10 +167,13 @@ describe('Route: /authoring/api/cql/', () => {
     });
 
     it('should return HTTP 500 if there is an error converting CQL to ELM', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact();
-      mockArtifactFindOneForSimpleArtifact();
-      mockMakeCQLtoELMRequestForSimpleArtifact(true, new Error('Connection Error'));
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      
+      // Mock CQL translator to fail
+      mockCQLTranslatorForError();
+
       request(app)
         .post('/authoring/api/cql/')
         .send(simpleArtifactWithDataModel)
@@ -168,23 +194,25 @@ describe('Route: /authoring/api/cql/', () => {
 });
 
 describe('Route: /authoring/api/cql/validate', () => {
-  let app, options, expect;
+  let app, options;
 
-  before(async () => {
+  before(async () => {    
     [app, options] = setupExpressApp();
-    expect = await importChaiExpect();
   });
 
   afterEach(() => {
+    nock.cleanAll();
     sandbox.restore();
     options.reset();
   });
 
   describe('POST', () => {
     it('should validate ELM that has no errors for authenticated users', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact();
-      mockMakeCQLtoELMRequestForSimpleArtifact(false);
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      mockCQLTranslatorForValidation(false); // JSON only, no XML
+
       request(app)
         .post('/authoring/api/cql/validate')
         .send(simpleArtifactWithDataModel)
@@ -200,9 +228,11 @@ describe('Route: /authoring/api/cql/validate', () => {
     });
 
     it('should validate ELM and include CQL when requested for authenticated users', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact();
-      mockMakeCQLtoELMRequestForSimpleArtifact(false);
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      mockCQLTranslatorForValidation(false);
+
       request(app)
         .post('/authoring/api/cql/validate?includeCQL=true')
         .send(simpleArtifactWithDataModel)
@@ -219,9 +249,15 @@ describe('Route: /authoring/api/cql/validate', () => {
     });
 
     it('should still validate ELM even if CQL formatting fails', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact(new Error('ConnectionError'));
-      mockMakeCQLtoELMRequestForSimpleArtifact(false);
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      
+      // Mock formatter to fail
+      mockCQLFormatterForError()
+        
+      mockCQLTranslatorForValidation(false);
+
       request(app)
         .post('/authoring/api/cql/validate')
         .send(simpleArtifactWithDataModel)
@@ -237,7 +273,13 @@ describe('Route: /authoring/api/cql/validate', () => {
     });
 
     it('should return HTTP 500 if there is an error finding external artifacts', done => {
-      mockCQLLibraryFindForSimpleArtifact(new Error('Connection Error'));
+      options.user = { uid: 'bob' };
+
+      // Mock database to fail
+      sandbox.stub(CQLLibrary, 'find').returns({
+        exec: sandbox.stub().rejects(new Error('Connection Error'))
+      });
+
       request(app)
         .post('/authoring/api/cql/validate')
         .send(simpleArtifactWithDataModel)
@@ -246,9 +288,13 @@ describe('Route: /authoring/api/cql/validate', () => {
     });
 
     it('should return HTTP 500 if there is an error converting CQL to ELM', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact();
-      mockMakeCQLtoELMRequestForSimpleArtifact(false, new Error('Connection Error'));
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      
+      // Mock CQL translator to fail
+      mockCQLTranslatorForError();
+
       request(app)
         .post('/authoring/api/cql/validate')
         .send(simpleArtifactWithDataModel)
@@ -269,22 +315,25 @@ describe('Route: /authoring/api/cql/validate', () => {
 });
 
 describe('Route: /authoring/api/cql/viewCql', () => {
-  let app, options, expect;
+  let app, options;
 
-  before(async () => {
+  before(async () => {    
     [app, options] = setupExpressApp();
-    expect = await importChaiExpect();
   });
 
   afterEach(() => {
+    nock.cleanAll();
     sandbox.restore();
     options.reset();
   });
 
   describe('POST', () => {
     it('should return CQL files for authenticated users', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact();
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      mockCQLFormatterForSuccess();
+
       request(app)
         .post('/authoring/api/cql/viewCql')
         .send(simpleArtifactWithDataModel)
@@ -301,8 +350,13 @@ describe('Route: /authoring/api/cql/viewCql', () => {
     });
 
     it('should still return CQL files even if CQL formatting fails', done => {
-      mockCQLLibraryFindForSimpleArtifact();
-      mockFormatCQLForSimpleArtifact(new Error('Connection Error'));
+      options.user = { uid: 'bob' };
+
+      mockDatabaseForSuccess();
+      
+      // Mock formatter to fail
+      mockCQLFormatterForError();
+
       request(app)
         .post('/authoring/api/cql/viewCql')
         .send(simpleArtifactWithDataModel)
@@ -319,7 +373,13 @@ describe('Route: /authoring/api/cql/viewCql', () => {
     });
 
     it('should return HTTP 500 if there is an error finding external artifacts', done => {
-      mockCQLLibraryFindForSimpleArtifact(new Error('Connection Error'));
+      options.user = { uid: 'bob' };
+
+      // Mock database to fail
+      sandbox.stub(CQLLibrary, 'find').returns({
+        exec: sandbox.stub().rejects(new Error('Connection Error'))
+      });
+
       request(app)
         .post('/authoring/api/cql/viewCql')
         .send(simpleArtifactWithDataModel)
@@ -339,64 +399,177 @@ describe('Route: /authoring/api/cql/viewCql', () => {
   });
 });
 
-function mockMakeCQLtoELMRequestForSimpleArtifact(includeXML = true, err) {
-  let results;
-  if (err == null) {
-    results = [];
-    const formats = includeXML ? ['json', 'xml'] : ['json'];
-    ['FHIRHelpers', 'SimpleArtifact'].forEach(name => {
-      formats.forEach(format => {
-        results.push({
-          name,
-          content: fs.readFileSync(path.join(dirname, 'fixtures', `${name}.elm.${format}`), 'utf-8')
-        });
-      });
-    });
+function mockCQLTranslatorForError() {
+ nock('http://localhost:8080')
+   .post('/cql/translator')
+   .query(true)
+   .reply(500, 'Connection Error');
+}
+
+function mockCQLFormatterForError() {
+  nock('http://localhost:8080')
+    .post('/cql/formatter')
+    .reply(500, 'ConnectionError');
   }
-  replace(
-    cqlHandler,
-    'makeCQLtoELMRequest',
-    mock('makeCQLtoELMRequest')
-      .withArgs(
-        match(v => v.length === 1 && v[0].name === 'SimpleArtifact'),
-        match(v => v.length === 1),
-        includeXML
-      )
-      .yields(err, results)
-  );
+
+// New helper function for validation tests
+function mockCQLTranslatorForValidation(includeXML = false) {
+  nock('http://localhost:8080')
+    .post('/cql/translator')
+    .query(true)
+    .reply(200, function(uri, requestBody) {
+      return createMockELMValidationResponse(includeXML);
+    }, {
+      'Content-Type': 'multipart/form-data; boundary=mock-boundary'
+    });
 }
 
-function mockArtifactFindOneForSimpleArtifact(err) {
-  replace(
-    Artifact,
-    'findOne',
-    mock('findOne')
-      .withArgs({ _id: { $ne: null, $eq: '64c2ccf67124220b222f5f91' } })
-      .returns({ exec: err ? fake.rejects(err) : fake.resolves(new Artifact(SimpleArtifact)) })
-  );
+function createMockELMValidationResponse(includeXML = false) {
+  const boundary = 'mock-boundary';
+  
+  // Create mock ELM for validation (JSON only unless includeXML is true)
+  const simpleArtifactELM = JSON.stringify({
+    library: {
+      identifier: { id: 'SimpleArtifact', version: '1.0.0' },
+      schemaIdentifier: { id: 'urn:hl7-org:elm', version: 'r1' },
+      usings: { def: [{ localIdentifier: 'System', uri: 'urn:hl7-org:elm-types:r1' }] },
+      annotation: [] // No errors
+    }
+  });
+  
+  const fhirHelpersELM = JSON.stringify({
+    library: {
+      identifier: { id: 'FHIRHelpers', version: '4.0.1' },
+      schemaIdentifier: { id: 'urn:hl7-org:elm', version: 'r1' },
+      annotation: [] // No errors
+    }
+  });
+
+  let response = `--${boundary}\r\n` +
+         `Content-Disposition: form-data; name="SimpleArtifact"\r\n\r\n` +
+         `${simpleArtifactELM}\r\n` +
+         `--${boundary}\r\n` +
+         `Content-Disposition: form-data; name="FHIRHelpers"\r\n\r\n` +
+         `${fhirHelpersELM}\r\n`;
+
+  if (includeXML) {
+    const simpleArtifactELMXML = `<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="urn:hl7-org:elm:r1">
+  <identifier id="SimpleArtifact" version="1.0.0"/>
+</library>`;
+    
+    const fhirHelpersELMXML = `<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="urn:hl7-org:elm:r1">
+  <identifier id="FHIRHelpers" version="4.0.1"/>
+</library>`;
+
+    response += `--${boundary}\r\n` +
+               `Content-Disposition: form-data; name="SimpleArtifact"\r\n\r\n` +
+               `${simpleArtifactELMXML}\r\n` +
+               `--${boundary}\r\n` +
+               `Content-Disposition: form-data; name="FHIRHelpers"\r\n\r\n` +
+               `${fhirHelpersELMXML}\r\n`;
+  }
+
+  response += `--${boundary}--\r\n`;
+  return response;
 }
 
-function mockFormatCQLForSimpleArtifact(err) {
-  // const stub = sinon.stub().returns(fs.readFileSync(path.join(dirname, 'fixtures', 'SimpleArtifact.cql'), 'utf-8'));
-  // cqlHandler.__Rewire__('formatCQL', (cqlText, callback) => {fs.readFileSync(path.join(dirname, 'fixtures', 'SimpleArtifact.cql'), 'utf-8')});
-  sandbox.stub(cqlHandler, 'formatCQL').returns(function() {});
-  replace(
-    cqlHandler,
-    'formatCQL',
-    mock('formatCQL')
-      .withArgs(match('library "SimpleArtifact"'))
-      .yields(err, err ? undefined : fs.readFileSync(path.join(dirname, 'fixtures', 'SimpleArtifact.cql'), 'utf-8'))
-  );
+// Mock database responses with realistic data
+function mockDatabaseForSuccess() {
+  // Mock CQL Library query
+  sandbox.stub(CQLLibrary, 'find').returns({
+    exec: sandbox.stub().resolves([]) // No external libraries
+  });
+
+  // Mock Artifact query  
+  const mockArtifact = {
+    ...SimpleArtifact,
+    toPublishableLibrary: () => ({
+      resourceType: 'Library',
+      id: 'SimpleArtifact',
+      content: [{
+        contentType: 'application/cql',
+        data: Buffer.from('mock cql content').toString('base64')
+      }]
+    })
+  };
+  
+  sandbox.stub(Artifact, 'findOne').returns({
+    exec: sandbox.stub().resolves(mockArtifact)
+  });
 }
 
-function mockCQLLibraryFindForSimpleArtifact(err) {
-  replace(
-    CQLLibrary,
-    'find',
-    mock('find')
-      .withArgs({ user: 'bob', linkedArtifactId: { $ne: null, $eq: '64c2ccf67124220b222f5f91' } })
-      .returns({ exec: err ? fake.rejects(err) : fake.resolves([]) })
-  );
+// Mock external HTTP services with realistic responses
+function mockExternalServicesForSuccess() {
+  mockCQLFormatterForSuccess();
+  mockCQLTranslatorForSuccess();
+}
+
+function mockCQLFormatterForSuccess() {
+  nock('http://localhost:8080')
+    .post('/cql/formatter')
+    .reply(200, function(uri, requestBody) {
+      // Return formatted CQL (or just return input as-is)
+      return requestBody;
+    });
+}
+
+function mockCQLTranslatorForSuccess() {
+  nock('http://localhost:8080')
+    .post('/cql/translator')
+    .query(true) // Accept any query parameters
+    .reply(200, function(uri, requestBody) {
+      // Return realistic multipart ELM response
+      return createMockELMMultipartResponse();
+    }, {
+      'Content-Type': 'multipart/form-data; boundary=mock-boundary'
+    });
+}
+
+function createMockELMMultipartResponse() {
+  const boundary = 'mock-boundary';
+  
+  // Create mock ELM for SimpleArtifact
+  const simpleArtifactELM = JSON.stringify({
+    library: {
+      identifier: { id: 'SimpleArtifact', version: '1.0.0' },
+      schemaIdentifier: { id: 'urn:hl7-org:elm', version: 'r1' },
+      usings: { def: [{ localIdentifier: 'System', uri: 'urn:hl7-org:elm-types:r1' }] }
+    }
+  });
+  
+  const simpleArtifactELMXML = `<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="urn:hl7-org:elm:r1">
+  <identifier id="SimpleArtifact" version="1.0.0"/>
+</library>`;
+
+  // Create mock ELM for FHIRHelpers  
+  const fhirHelpersELM = JSON.stringify({
+    library: {
+      identifier: { id: 'FHIRHelpers', version: '4.0.1' },
+      schemaIdentifier: { id: 'urn:hl7-org:elm', version: 'r1' }
+    }
+  });
+  
+  const fhirHelpersELMXML = `<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="urn:hl7-org:elm:r1">
+  <identifier id="FHIRHelpers" version="4.0.1"/>
+</library>`;
+
+  return `--${boundary}\r\n` +
+         `Content-Disposition: form-data; name="SimpleArtifact"\r\n\r\n` +
+         `${simpleArtifactELM}\r\n` +
+         `--${boundary}\r\n` +
+         `Content-Disposition: form-data; name="SimpleArtifact"\r\n\r\n` +
+         `${simpleArtifactELMXML}\r\n` +
+         `--${boundary}\r\n` +
+         `Content-Disposition: form-data; name="FHIRHelpers"\r\n\r\n` +
+         `${fhirHelpersELM}\r\n` +
+         `--${boundary}\r\n` +
+         `Content-Disposition: form-data; name="FHIRHelpers"\r\n\r\n` +
+         `${fhirHelpersELMXML}\r\n` +
+         `--${boundary}--\r\n`;
 }
 
 // Special parser to convert binary stream to a buffer
