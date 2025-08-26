@@ -1,20 +1,17 @@
 import path from 'path';
-import fs from 'fs';
 
 // Load the username/passwords that will be authenticated using the local authentication strategy
-let users = {};
+let usersFromConfig = {};
 try {
-  const userData = fs.readFileSync(path.join(process.cwd(), 'config', 'local-users.json'), 'utf8');
-  users = JSON.parse(userData);
+  usersFromConfig = require(path.join(process.cwd(), 'config', 'local-users.json'));
 } catch (err) {
-  if (err.code === 'ENOENT') {
+  if (err.code === 'MODULE_NOT_FOUND') {
     console.log('No users specified.');
   }
 }
 
-const userNames = Object.keys(users);
-
-function findByUsername(name, cb) {
+export function findByUsername(name, cb, users=usersFromConfig) {
+  const userNames = Object.keys(users);
   for (let i = 0; i < userNames.length; i++) {
     if (userNames[i] === name) {
       // Set up user object to mirror LDAP structure
@@ -24,5 +21,3 @@ function findByUsername(name, cb) {
   }
   return cb(null, null);
 }
-
-export { findByUsername };

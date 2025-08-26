@@ -41,7 +41,7 @@ function getLdapConfiguration(req, callback) {
   callback(null, ldapConfig);
 }
 
-function getLocalConfiguration(username, password, done) {
+function getLocalConfiguration(username, password, done, users=null) {
   findLocalUserById(username, (err, user) => {
     if (err) {
       return done(err);
@@ -53,7 +53,7 @@ function getLocalConfiguration(username, password, done) {
       return done(null, false);
     }
     return done(null, user);
-  });
+  }, users);
 }
 
 export default app => {
@@ -93,3 +93,5 @@ export default app => {
     done(null, { uid });
   });
 };
+
+export { getLdapConfiguration, getLocalConfiguration };
