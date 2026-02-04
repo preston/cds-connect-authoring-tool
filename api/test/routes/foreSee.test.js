@@ -1,15 +1,18 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const { stub } = sandbox;
-const { setupExpressApp, importChaiExpect } = require('../utils');
-const config = require('../../src/config');
+import request from 'supertest';
+import sinon from 'sinon';
+import { setupExpressApp, importChaiExpect } from '../utils.js';
+import config from '../../src/config.js';
 
 describe('Route: /authoring/api/foresee.js', () => {
-  let app, options, expect;
+  let app, options, expect, sandbox;
 
   before(async () => {
     [app, options] = setupExpressApp();
     expect = await importChaiExpect();
+  });
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
   });
 
   afterEach(() => {
@@ -19,7 +22,7 @@ describe('Route: /authoring/api/foresee.js', () => {
 
   describe('GET', () => {
     it('should get the foresee staging embed script when it is configured', done => {
-      stub(config, 'get').withArgs('foreSee.active').returns(true);
+      sandbox.stub(config, 'get').withArgs('foreSee.active').returns(true);
       config.get.callThrough();
 
       request(app)
@@ -33,7 +36,7 @@ describe('Route: /authoring/api/foresee.js', () => {
     });
 
     it('should not get the foresee staging embed script when it is not configured', done => {
-      stub(config, 'get').withArgs('foreSee.active').returns(false);
+      sandbox.stub(config, 'get').withArgs('foreSee.active').returns(false);
       config.get.callThrough();
 
       request(app)

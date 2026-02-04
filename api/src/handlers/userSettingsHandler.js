@@ -1,7 +1,7 @@
-const UserSettings = require('../models/userSettings');
-const { sendUnauthorized } = require('./common');
+import UserSettings from '../models/userSettings.js';
+import { sendUnauthorized } from './common.js';
 
-module.exports = {
+export default {
   get,
   put
 };

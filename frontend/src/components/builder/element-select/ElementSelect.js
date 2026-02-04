@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import pluralize from 'pluralize';
@@ -42,10 +42,15 @@ const ElementSelect = ({
   const [showVSACSelect, setShowVSACSelect] = useState(false);
   const artifact = useSelector(state => state.artifacts.artifact);
   const { _id: artifactId } = artifact;
-  const { data: externalCqlList } = useQuery(['externalCql', { artifactId }], () =>
-    fetchExternalCqlList({ artifactId })
-  );
-  const { data: elementTemplates } = useQuery('templates', () => fetchTemplates(), { staleTime: Infinity });
+  const { data: externalCqlList } = useQuery({
+    queryKey: ['externalCql', { artifactId }],
+    queryFn: () => fetchExternalCqlList({ artifactId })
+  });
+  const { data: elementTemplates } = useQuery({
+    queryKey: ['templates'],
+    queryFn: () => fetchTemplates(),
+    staleTime: Infinity
+  });
   const styles = useStyles();
 
   const background = styles[indentParity] ?? '';

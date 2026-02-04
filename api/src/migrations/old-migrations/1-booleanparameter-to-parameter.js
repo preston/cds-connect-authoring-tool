@@ -3,11 +3,10 @@
  * - adds { type: 'Boolean' } to each parameter
  * - renames 'booleanParameters' to 'parameters'
  */
-'use strict';
 
-module.exports.id = 'booleanParameter-to-parameter';
+export const id = 'booleanParameter-to-parameter';
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: booleanParameter-to-parameter');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -60,7 +59,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

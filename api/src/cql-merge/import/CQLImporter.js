@@ -1,9 +1,9 @@
-const { InputStream, CommonTokenStream } = require('antlr4');
-const { cqlVisitor } = require('./grammar/cqlVisitor');
-const { cqlLexer } = require('./grammar/cqlLexer');
-const { cqlParser } = require('./grammar/cqlParser');
-const { CQLLibrary } = require('./CQLLibrary');
-const { CQLLibraryGroup } = require('./CQLLibraryGroup');
+import { InputStream, CommonTokenStream } from 'antlr4';
+import cqlVisitor from './grammar-1.5/cqlVisitor.js';
+import cqlLexer from './grammar-1.5/cqlLexer.js';
+import cqlParser from './grammar-1.5/cqlParser.js';
+import { CQLLibrary } from './CQLLibrary.js';
+import { CQLLibraryGroup } from './CQLLibraryGroup.js';
 class CQLImporter extends cqlVisitor {
   constructor() {
     super();
@@ -35,4 +35,4 @@ class CQLImporter extends cqlVisitor {
   }
 }
 
-module.exports = { CQLImporter };
+export { CQLImporter };

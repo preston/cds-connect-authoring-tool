@@ -2,9 +2,8 @@
  * Migrates artifacts that have a parameter array on template instances, applying the following changes:
  * - renames 'parameters' to 'fields'
  */
-'use strict';
 
-module.exports.id = 'parameters-to-fields';
+export const id = 'parameters-to-fields';
 
 function parseTree(element) {
   // Replace 'parameters' with 'fields'
@@ -36,7 +35,7 @@ function parseElement(element) {
   return element;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: parameters-to-fields');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -99,7 +98,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

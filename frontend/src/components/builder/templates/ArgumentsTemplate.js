@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Box, Divider, Stack } from '@mui/material';
 import { Block as BlockIcon } from '@mui/icons-material';
 
@@ -19,7 +19,9 @@ const ArgumentTemplate = ({ argumentLabel, argumentType, argumentValue, handleUp
   const artifact = useSelector(state => state.artifacts.artifact);
   const { baseElements, parameters } = artifact;
   const query = { artifactId: artifact._id };
-  const { data: externalCqlList } = useQuery(['externalCql', query], () => fetchExternalCqlList(query), {
+  const { data: externalCqlList } = useQuery({
+    queryKey: ['externalCql', query],
+    queryFn: () => fetchExternalCqlList(query),
     enabled: artifact._id != null
   });
 

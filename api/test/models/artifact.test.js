@@ -1,17 +1,46 @@
-const { isEqual, isObject, transform } = require('lodash');
+import _ from 'lodash';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const Artifact = require('../../src/models/artifact');
-const testEmptyPublishableLibrary = require('./fixtures/artifact/Library-Test-Empty-Artifact');
-const testPublishableLibraryWithDates = require('./fixtures/artifact/Library-Test-Artifact-With-Dates');
-const testPublishableLibraryWithDatesAndContext = require('./fixtures/artifact/Library-Test-Artifact-With-Dates-And-Context');
-const testPublishableLibrary = require('./fixtures/artifact/Library-Test-CPG-Export');
-const testExpandedContext = require('./fixtures/artifact/Library-Test-Expanded-Context');
-const { importChaiExpect } = require('../utils');
+import Artifact from '../../src/models/artifact.js';
+
+// JSON imports will be handled dynamically in the tests
+import { importChaiExpect } from '../utils.js';
 
 describe('Artifact', () => {
   let expect;
+  let testEmptyPublishableLibrary,
+    testPublishableLibraryWithDates,
+    testPublishableLibraryWithDatesAndContext,
+    testPublishableLibrary,
+    testExpandedContext;
+
   before(async () => {
     expect = await importChaiExpect();
+
+    // Load JSON fixtures
+    const currentFilename = fileURLToPath(import.meta.url);
+    const currentDirname = dirname(currentFilename);
+
+    testEmptyPublishableLibrary = JSON.parse(
+      readFileSync(join(currentDirname, './fixtures/artifact/Library-Test-Empty-Artifact.json'), 'utf8')
+    );
+    testPublishableLibraryWithDates = JSON.parse(
+      readFileSync(join(currentDirname, './fixtures/artifact/Library-Test-Artifact-With-Dates.json'), 'utf8')
+    );
+    testPublishableLibraryWithDatesAndContext = JSON.parse(
+      readFileSync(
+        join(currentDirname, './fixtures/artifact/Library-Test-Artifact-With-Dates-And-Context.json'),
+        'utf8'
+      )
+    );
+    testPublishableLibrary = JSON.parse(
+      readFileSync(join(currentDirname, './fixtures/artifact/Library-Test-CPG-Export.json'), 'utf8')
+    );
+    testExpandedContext = JSON.parse(
+      readFileSync(join(currentDirname, './fixtures/artifact/Library-Test-Expanded-Context.json'), 'utf8')
+    );
   });
 
   describe('#validate', () => {
@@ -34,9 +63,9 @@ describe('Artifact', () => {
      */
     function difference(object, base) {
       function changes(object, base) {
-        return transform(object, function (result, value, key) {
-          if (!isEqual(value, base[key])) {
-            result[key] = isObject(value) && isObject(base[key]) ? changes(value, base[key]) : value;
+        return _.transform(object, function (result, value, key) {
+          if (!_.isEqual(value, base[key])) {
+            result[key] = _.isObject(value) && _.isObject(base[key]) ? changes(value, base[key]) : value;
           }
         });
       }
@@ -51,7 +80,7 @@ describe('Artifact', () => {
       //convert it to a publishable library JSON object
       const emptyPL = testEmptyArtifact.toPublishableLibrary();
       //compare it to the known "good" example file
-      expect(isEqual(emptyPL, testEmptyPublishableLibrary)).to.equal(true);
+      expect(_.isEqual(emptyPL, testEmptyPublishableLibrary)).to.equal(true);
     });
 
     it('should create a CPG Artifact with dates and export as a Publishable Library', () => {
@@ -65,7 +94,7 @@ describe('Artifact', () => {
         }
       });
       const datePL = testDates.toPublishableLibrary();
-      expect(isEqual(difference(datePL, testPublishableLibraryWithDates), {})).to.equal(true);
+      expect(_.isEqual(difference(datePL, testPublishableLibraryWithDates), {})).to.equal(true);
     });
 
     it('should create a CPG Artifact with context and dates and export as a Publishable Library', () => {
@@ -83,7 +112,7 @@ describe('Artifact', () => {
         ]
       });
       const contextPL = testContext.toPublishableLibrary();
-      expect(isEqual(difference(contextPL, testPublishableLibraryWithDatesAndContext), {})).to.equal(true);
+      expect(_.isEqual(difference(contextPL, testPublishableLibraryWithDatesAndContext), {})).to.equal(true);
     });
 
     it('should create a mostly complete CPG Artifact and export as a Publishable Library', () => {
@@ -124,7 +153,7 @@ describe('Artifact', () => {
         ]
       });
       const cpgPL = testArtifact.toPublishableLibrary();
-      expect(isEqual(difference(cpgPL, testPublishableLibrary), {})).to.equal(true);
+      expect(_.isEqual(difference(cpgPL, testPublishableLibrary), {})).to.equal(true);
     });
 
     it('should create a mostly complete CPG Artifact with expanded context and export as a Publishable Library', () => {
@@ -188,7 +217,7 @@ describe('Artifact', () => {
         ]
       });
       const ecPL = testCtxArtifact.toPublishableLibrary();
-      expect(isEqual(difference(ecPL, testExpandedContext), {})).to.equal(true);
+      expect(_.isEqual(difference(ecPL, testExpandedContext), {})).to.equal(true);
     });
   });
 });

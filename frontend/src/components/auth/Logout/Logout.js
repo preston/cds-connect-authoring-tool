@@ -1,6 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useToggle } from 'react-use';
 import { Button, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from '@mui/material';
 import { ArrowDropDown as ArrowDropDownIcon } from '@mui/icons-material';
@@ -18,7 +18,7 @@ const Logout = () => {
   const termsAcceptedDate = useSelector(state => state.auth.termsAcceptedDate);
   const dispatch = useDispatch();
   const anchorRef = useRef(null);
-  const history = useHistory();
+  const navigate = useNavigate();
   const styles = useStyles();
 
   const acceptTerms = useCallback(() => {
@@ -29,8 +29,8 @@ const Logout = () => {
     toggleModal(false);
     toggleMenu(false);
     dispatch(logoutUser());
-    window.setTimeout(() => history.push('/'), 10);
-  }, [dispatch, history, toggleMenu, toggleModal]);
+    window.setTimeout(() => navigate('/'), 10);
+  }, [dispatch, navigate, toggleMenu, toggleModal]);
 
   const handleLogout = useCallback(() => {
     artifactSaved ? logout() : toggleModal(true);

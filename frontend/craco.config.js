@@ -16,7 +16,25 @@ module.exports = {
   webpack: {
     configure: (webpackConfig, { env, paths }) => {
       configureFallbacks(webpackConfig);
+
+      // control debugging behavior
+      if (env === 'development') {
+        webpackConfig.devtool = 'eval-source-map';
+      }
+
       return webpackConfig;
+    }
+  },
+  style: {
+    sass: {
+      loaderOptions: {
+        api: 'modern',
+        sassOptions: {
+          // Suppress deprecation warnings from dependencies
+          quietDeps: true,
+          silenceDeprecations: ['import', 'global-builtin', 'color-functions']
+        }
+      }
     }
   }
 };

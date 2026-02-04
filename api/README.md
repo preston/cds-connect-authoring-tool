@@ -6,10 +6,7 @@ The Clinical Decision Support (CDS) Authoring Tool is a web-based application ai
 
 The CDS Authoring Tool API provides a RESTful backend for the CDS Authoring Tool React web frontend.
 
-As of May, 2025, AHRQ's public CDS Connect environment is no longer available. 
-
-The original CDS Authoring Tool from [CDS Connect](https://cds.ahrq.gov/cdsconnect) was sponsored by the [Agency for Healthcare Research and Quality](https://www.ahrq.gov/) (AHRQ), and initially developed under contract with AHRQ by MITRE's [Health FFRDC](https://www.mitre.org/our-impact/rd-centers/health-ffrdc).
-
+As of May, 2025, this is maintained as a community project. The original Authoring Tool from [CDS Connect](https://cds.ahrq.gov/cdsconnect) was sponsored by the [Agency for Healthcare Research and Quality](https://www.ahrq.gov/) (AHRQ), who no longer maintains a hosted production instance. It was initially developed under contract with AHRQ by MITRE's [Health FFRDC](https://www.mitre.org/our-impact/rd-centers/health-ffrdc). This version was forked by Preston Lee to make it deployable as a self-hosted tool and fix long-standing technical debt such that community contributors can continue development.
 
 ## Contributions
 
@@ -19,9 +16,9 @@ For information about contributing to this project, please see [CONTRIBUTING](..
 
 This project represents the M, E, and N in the MERN application architecture, using MongoDB, Express, and Node.
 
-To develop and run this project, your must install MongoDB and Node.js LTS edition. On Mac OS X, this can be done through brew:
+To develop and run this project, your must install MongoDB and Node.js LTS edition. On macOS, this can be done through brew:
 
-```bash
+```sh
 brew install node # install node, which also installs npm
 brew install mongodb # install mongodb on host system
 brew services start mongodb # start mongo
@@ -31,7 +28,7 @@ For other operating systems, use the instructions provided in each tool's online
 
 Alternately, MongoDB can be installed and run using a docker image:
 
-```bash
+```sh
 mkdir -p db
 docker run --name=mongodb --volume=$PWD/db:/data/db -p 27017:27017 --restart=unless-stopped --detach=true mongo:8
 ```
@@ -40,7 +37,7 @@ This creates a local db directory and then runs a MongoDB docker container that 
 
 Once the prerequisite tools are installed, use npm to install the dependency libraries:
 
-```bash
+```sh
 npm install # installs this app's dependencies based on this project's package.json and package-lock.json
 ```
 
@@ -51,7 +48,7 @@ By default, the project will attempt to convert CQL to ELM on download. To disab
 
 ### Add / Remove / Adjust dependencies
 
-```bash
+```sh
 npm install <package> # add a package. add --save-dev if this is a development dependency.
 npm install <package>@<version> # will adjust version
 npm uninstall <package> # remove a package.
@@ -156,8 +153,11 @@ For information on running the CDS Authoring Tool in Docker, see the main [READM
 
 `AT_Internal_CDS_Connect_Conversions` provides a list of available functions to convert units. When updating or adding to these functions, update the file in `src/data/library_helpers/CQLFiles/AT_Internal_CDS_Connect_Conversions.cql` with the functions needed. After, regenerate the ELM file for this CQL file and update it in `src/data/library_helpers/ELMFiles/AT_Internal_CDS_Connect_Conversions.json`. If a function requires a more understandable description to be displayed in the user interface, such as the start and target units for the function, update the list of descriptions in `src/data/handlers/configHandler.js`.
 
-## LICENSE
+## License
 
+This project is released under the Apache 2.0. The original software as developed by AHRQ carred the below blurb, retained here unmodified.
+
+```
 Copyright 2016-2023 Agency for Healthcare Research and Quality
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -171,3 +171,8 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+```
+
+Following AHRQ's shutdown of the hosted CDS Connect systems, the code was forked by Preston Lee without the AHRQ-specific headers, footers, navigational elements and branding, and maintained as a community project to fix long-standing technical debt and outdated dependency issues.
+
+Subsequent updates and contributions are made under the same Apache 2.0 license.

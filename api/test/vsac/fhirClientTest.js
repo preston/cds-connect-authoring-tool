@@ -1,9 +1,9 @@
-const lodash = require('lodash');
-const nock = require('nock');
+import lodash from 'lodash';
+import nock from 'nock';
 
-const client = require('../../src/vsac/FHIRClient');
-const FHIRMocks = require('./fixtures/FHIRfixtures');
-const { importChaiExpect } = require('../utils');
+import client from '../../src/vsac/FHIRClient.js';
+import * as FHIRMocks from './fixtures/FHIRfixtures.js';
+import { importChaiExpect } from '../utils.js';
 
 describe('FHIRClient', () => {
   let expect;

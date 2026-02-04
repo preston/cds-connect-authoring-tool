@@ -2,9 +2,8 @@
  * Migrates artifacts that don't have comment fields, applying the following changes:
  * - adds { id: 'comment', type: 'textarea', name: 'Comment' } to parameters array on elements
  */
-'use strict';
 
-module.exports.id = 'nocomments-to-comments';
+export const id = 'nocomments-to-comments';
 
 function parseTree(element) {
   const commentParameterIndex = element.parameters.findIndex(param => param.id === 'comment');
@@ -33,7 +32,7 @@ function parseElement(element) {
   return element;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: nocomments-to-comments');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -96,7 +95,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

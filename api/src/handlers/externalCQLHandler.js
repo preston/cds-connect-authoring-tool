@@ -1,9 +1,9 @@
-const _ = require('lodash');
-const unzipper = require('unzipper');
-const CQLLibrary = require('../models/cqlLibrary');
-const Artifact = require('../models/artifact');
-const makeCQLtoELMRequest = require('../handlers/cqlHandler').makeCQLtoELMRequest;
-const { sendUnauthorized } = require('./common');
+import _ from 'lodash';
+import unzipper from 'unzipper';
+import CQLLibrary from '../models/cqlLibrary.js';
+import Artifact from '../models/artifact.js';
+import * as cqlHandler from '../handlers/cqlHandler.js';
+import { sendUnauthorized } from './common.js';
 
 const supportedFHIRVersions = ['1.0.2', '3.0.0', '4.0.0', '4.0.1'];
 
@@ -364,13 +364,6 @@ const shouldLibraryBeUpdated = (library, artifact) => {
   return returnTypesMatch && argsMatch;
 };
 
-module.exports = {
-  allGet,
-  singleGet,
-  singlePost,
-  singleDelete
-};
-
 // Get all libraries for a given artifact
 async function allGet(req, res) {
   if (req.user) {
@@ -493,7 +486,7 @@ function singlePost(req, res) {
               return Promise.resolve({ filename: fileName, type: 'text/plain', text: buffer.toString() });
             })
           );
-          makeCQLtoELMRequest(files, [], false, async (err, elmFiles) => {
+          cqlHandler.makeCQLtoELMRequest(files, [], false, async (err, elmFiles) => {
             if (err) {
               res.status(500).send(err);
               return;
@@ -716,7 +709,7 @@ function singlePost(req, res) {
 
       const files = [cqlJson];
 
-      makeCQLtoELMRequest(files, [], false, async (err, elmFiles) => {
+      cqlHandler.makeCQLtoELMRequest(files, [], false, async (err, elmFiles) => {
         if (err) {
           res.status(500).send(err);
           return;
@@ -948,3 +941,10 @@ async function singleDelete(req, res) {
     sendUnauthorized(res);
   }
 }
+
+export default {
+  allGet,
+  singleGet,
+  singlePost,
+  singleDelete
+};

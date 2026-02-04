@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   CircularProgress,
@@ -164,11 +164,11 @@ const ValueSetSearchResultsTable = ({ keyword, setSearchCount, setSelectedValueS
   const textStyles = useTextStyles();
 
   const query = { keyword, apiKey };
-  const { isLoading, isSuccess, data, error } = useQuery(
-    ['searchVSACByKeyword', query],
-    () => searchVSACByKeyword(query),
-    { enabled: keyword != null }
-  );
+  const { isLoading, isSuccess, data, error } = useQuery({
+    queryKey: ['searchVSACByKeyword', query],
+    queryFn: () => searchVSACByKeyword(query),
+    enabled: keyword != null
+  });
 
   const searchResultCount = data?.count;
   const searchResultTotal = data?.total;

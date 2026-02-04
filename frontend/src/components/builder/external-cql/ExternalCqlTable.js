@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from '@mui/material';
 
 import ExternalCqlTableRow from './ExternalCqlTableRow';
@@ -19,21 +19,26 @@ const ExternalCqlTable = ({ externalCqlList }) => {
   const textStyles = useTextStyles();
   const artifact = useSelector(state => state.artifacts.artifact);
   const librariesInUse = useSelector(state => state.artifacts.librariesInUse);
-  const { mutate: invokeFetchArtifact } = useMutation(fetchArtifact);
+  const { mutate: invokeFetchArtifact } = useMutation({
+    mutationFn: fetchArtifact
+  });
   const handleLoadArtifact = useCallback(
     id => {
       invokeFetchArtifact({ artifactId: id }, { onSuccess: data => dispatch(loadArtifact(data)) });
     },
     [invokeFetchArtifact, dispatch]
   );
-  const { mutate: invokeSaveArtifact } = useMutation(saveArtifact);
+  const { mutate: invokeSaveArtifact } = useMutation({
+    mutationFn: saveArtifact
+  });
   const handleSaveArtifact = useCallback(() => {
     invokeSaveArtifact({ artifact }, { onSuccess: data => dispatch(loadArtifact(data)) });
   }, [invokeSaveArtifact, artifact, dispatch]);
-  const deleteMutation = useMutation(deleteExternalCql, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('externalCql');
-      queryClient.invalidateQueries('modifiers');
+  const deleteMutation = useMutation({
+    mutationFn: deleteExternalCql,
+    onSuccess: async () => {
+      await queryClient.refetchQueries(['externalCql', artifact._id]);
+      queryClient.invalidateQueries(['modifiers']);
       handleLoadArtifact(artifact._id);
     }
   });

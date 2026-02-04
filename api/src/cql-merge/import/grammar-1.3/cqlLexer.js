@@ -1,6 +1,6 @@
 // Generated from cql.g4 by ANTLR 4.8
 // jshint ignore: start
-var antlr4 = require('antlr4/index');
+import antlr4 from 'antlr4/index.js';
 
 
 
@@ -1187,5 +1187,4 @@ cqlLexer.prototype.ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4",
 cqlLexer.prototype.grammarFileName = "cql.g4";
 
 
-exports.cqlLexer = cqlLexer;
-
+export { cqlLexer };

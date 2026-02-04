@@ -125,4 +125,4 @@ class CQLExporter {
   }
 }
 
-module.exports = { CQLExporter };
+export { CQLExporter };

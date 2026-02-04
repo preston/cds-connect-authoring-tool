@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Stack } from '@mui/material';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetchModifiers } from 'queries/modifiers';
 import { ElementCard } from 'components/elements';
 import ExpressionPhrase from 'components/builder/ExpressionPhrase';
@@ -33,7 +33,9 @@ const ArtifactElement = ({
   const titleField = getFieldWithId(elementInstance.fields, 'element_name');
   const baseElementIsUsed = elementInstance.usedBy ? elementInstance.usedBy.length !== 0 : false;
 
-  const modifiersQuery = useQuery(['modifiers', { artifactId }], () => fetchModifiers({ artifactId }), {
+  const modifiersQuery = useQuery({
+    queryKey: ['modifiers', { artifactId }],
+    queryFn: () => fetchModifiers({ artifactId }),
     enabled: artifactId != null
   });
   const modifiersByInputType = useMemo(() => modifiersQuery.data?.modifiersByInputType ?? {}, [modifiersQuery.data]);

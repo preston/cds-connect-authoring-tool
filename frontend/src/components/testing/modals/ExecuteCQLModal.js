@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 
 import TestingParameters from '../TestingParameters';
@@ -11,7 +11,10 @@ import fhirVersionMap from 'data/fhirVersionMap';
 const ExecuteCQLModal = ({ patients, handleCloseModal, handleExecuteCQL }) => {
   const [artifactToExecute, setArtifactToExecute] = useState(null);
   const [paramsToExecute, setParamsToExecute] = useState([]);
-  const { data: artifacts } = useQuery('artifacts', () => fetchArtifacts());
+  const { data: artifacts } = useQuery({
+    queryKey: ['artifacts'],
+    queryFn: () => fetchArtifacts()
+  });
 
   const fhirVersion = patients[0].fhirVersion;
   const validArtifactsToExecute = useMemo(

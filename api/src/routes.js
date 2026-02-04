@@ -1,16 +1,16 @@
-const artifactRouter = require('./routers/artifactRouter.js');
-const testingRouter = require('./routers/testingRouter.js');
-const externalCQLRouter = require('./routers/externalCQLRouter.js');
-const configRouter = require('./routers/configRouter.js');
-const cqlRouter = require('./routers/cqlRouter');
-const authRouter = require('./routers/authRouter.js');
-const fhirRouter = require('./routers/fhirRouter');
-const foreseeHandler = require('./handlers/foreseeHandler');
-const modifiersRouter = require('./routers/modifiersRouter');
-const queryRouter = require('./routers/queryRouter');
-const userSettingsRouter = require('./routers/userSettingsRouter');
+import artifactRouter from './routers/artifactRouter.js';
+import testingRouter from './routers/testingRouter.js';
+import externalCQLRouter from './routers/externalCQLRouter.js';
+import configRouter from './routers/configRouter.js';
+import cqlRouter from './routers/cqlRouter.js';
+import authRouter from './routers/authRouter.js';
+import fhirRouter from './routers/fhirRouter.js';
+import foreseeHandler from './handlers/foreseeHandler.js';
+import modifiersRouter from './routers/modifiersRouter.js';
+import queryRouter from './routers/queryRouter.js';
+import userSettingsRouter from './routers/userSettingsRouter.js';
 
-module.exports = app => {
+export default app => {
   // Routing for API check
   app.get('/', (req, res) => {
     res.json({ message: 'API Initialized!' });
@@ -22,7 +22,7 @@ module.exports = app => {
   // Routing for Testing
   app.use('/authoring/api/testing', testingRouter);
 
-  // Routing for External CQL
+  // // Routing for External CQL
   app.use('/authoring/api/externalCQL', externalCQLRouter);
 
   // Routing for Resources, ValueSets, Templates

@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   CircularProgress,
@@ -21,11 +21,11 @@ const ValueSetDetailsTable = ({ valueSetOid }) => {
   const apiKey = useSelector(state => state.vsac.apiKey);
 
   const query = { oid: valueSetOid, apiKey };
-  const { isLoading, isSuccess, data, error } = useQuery(
-    ['valueSetDetails', query],
-    () => fetchValueSetDetails(query),
-    { retry: false }
-  );
+  const { isLoading, isSuccess, data, error } = useQuery({
+    queryKey: ['valueSetDetails', query],
+    queryFn: () => fetchValueSetDetails(query),
+    retry: false
+  });
 
   return (
     <>

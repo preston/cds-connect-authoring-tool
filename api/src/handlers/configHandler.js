@@ -1,18 +1,32 @@
-const Templates = require('../data/formTemplates');
-const ValueSets = require('../data/valueSets');
-const conversionsELMFile = require('../data/library_helpers/ELMFiles/AT_Internal_CDS_Connect_Conversions.json');
+import Templates from '../data/formTemplates.js';
+import ValueSets from '../data/valueSets.js';
+import fs from 'fs';
+
+// Import JSON files using fs.readFileSync
+const conversionsELMFile = JSON.parse(
+  fs.readFileSync(new URL('../data/library_helpers/ELMFiles/AT_Internal_CDS_Connect_Conversions.json', import.meta.url))
+);
+const dstu2_resources = JSON.parse(
+  fs.readFileSync(new URL('../data/query_builder/dstu2_resources.json', import.meta.url))
+);
+const stu3_resources = JSON.parse(
+  fs.readFileSync(new URL('../data/query_builder/stu3_resources.json', import.meta.url))
+);
+const r4_resources = JSON.parse(fs.readFileSync(new URL('../data/query_builder/r4_resources.json', import.meta.url)));
+const operators = JSON.parse(fs.readFileSync(new URL('../data/query_builder/operators.json', import.meta.url)));
+
 const queryResources = {
-  dstu2_resources: require('../data/query_builder/dstu2_resources.json'),
-  stu3_resources: require('../data/query_builder/stu3_resources.json'),
-  r4_resources: require('../data/query_builder/r4_resources.json'),
-  operators: require('../data/query_builder/operators.json')
+  dstu2_resources,
+  stu3_resources,
+  r4_resources,
+  operators
 };
 
 // If new functions are added to AT_Internal_CDS_Connect_Conversions and a separate description is desired,
 // add a key value pair to the following object with the descripton: function_name : function_description
 const conversionFunctionDescriptions = { to_mg_per_dL: 'mmol/L to mg/dL for blood cholesterol' };
 
-module.exports = {
+export default {
   getTemplates,
   getValueSets,
   getOneValueSet,
@@ -43,7 +57,6 @@ function getOneValueSet(request, result) {
   // }
 
   // Gets the nested ValueSet as deep as specified
-  // const path = request.params['0'].split('/');
   const path = request.params.valueset;
   // console.log('path', path);
   let selectedObject = ValueSets;
@@ -53,7 +66,7 @@ function getOneValueSet(request, result) {
       selectedObject = selectedObject[variable];
       if (selectedObject === undefined) {
         result.status(404).send('This level of ValueSet does not exist');
-        break;
+        return;
       }
     }
   }

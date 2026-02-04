@@ -5,4 +5,4 @@ class RawCQL {
   }
 }
 
-module.exports = { RawCQL };
+export default RawCQL;

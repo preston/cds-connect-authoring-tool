@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import moment from 'moment';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 
 import { saveArtifact, downloadArtifact, fetchArtifact, initializeArtifact } from 'queries/artifacts';
@@ -16,42 +17,48 @@ import WorkspaceTabs from './WorkspaceTabs';
 import isBlankArtifact from 'utils/artifacts/isBlankArtifact';
 import { ErrorPage } from 'components/base';
 
-const Workspace = ({ match }) => {
+const Workspace = () => {
   const spacingStyles = useSpacingStyles();
   const styles = useStyles();
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
   const artifactRef = useRef();
-  const artifactId = match.params.id;
+  const { id } = useParams();
   const [statusMessage, setStatusMessage] = useState('');
   const artifact = useSelector(state => state.artifacts.artifact);
   const scrollToId = useSelector(state => state.navigation.scrollToId);
-  const externalCqlQuery = { artifactId };
-  const { data: externalCqlList } = useQuery(
-    ['externalCql', externalCqlQuery],
-    () => fetchExternalCqlList(externalCqlQuery),
-    { enabled: externalCqlQuery.artifactId != null }
-  );
-  const { mutate: invokeFetchArtifact, isLoading } = useMutation(fetchArtifact);
+  const externalCqlQuery = { artifactId: id };
+  const { data: externalCqlList } = useQuery({
+    queryKey: ['externalCql', externalCqlQuery],
+    queryFn: () => fetchExternalCqlList(externalCqlQuery),
+    enabled: externalCqlQuery.artifactId != null
+  });
+  const { mutate: invokeFetchArtifact, isLoading } = useMutation({
+    mutationFn: fetchArtifact
+  });
   const handleLoadArtifact = useCallback(
     id => {
       invokeFetchArtifact({ artifactId: id }, { onSuccess: data => dispatch(loadArtifact(data)) });
     },
     [invokeFetchArtifact, dispatch]
   );
-  const { mutate: invokeInitializeArtifact } = useMutation(initializeArtifact);
+  const { mutate: invokeInitializeArtifact } = useMutation({
+    mutationFn: initializeArtifact
+  });
   const handleInitializeArtifact = useCallback(
     () => invokeInitializeArtifact({}, { onSuccess: data => dispatch(loadArtifact(data)) }),
     [invokeInitializeArtifact, dispatch]
   );
-  const { mutate: invokeSaveArtifact } = useMutation(saveArtifact);
+  const { mutate: invokeSaveArtifact } = useMutation({
+    mutationFn: saveArtifact
+  });
   const handleSaveArtifact = useCallback(
     (artifact, artifactProps, updateStatusMessage = true) =>
       invokeSaveArtifact(
         { artifact, artifactProps },
         {
           onSuccess: data => {
-            queryClient.invalidateQueries('artifacts');
+            queryClient.invalidateQueries(['artifacts']);
             dispatch(artifactSaved(data));
             if (updateStatusMessage) setStatusMessage(`Last saved ${moment().format('dddd, MMMM Do YYYY, h:mm:ss a')}`);
           },
@@ -62,7 +69,8 @@ const Workspace = ({ match }) => {
       ),
     [invokeSaveArtifact, queryClient, dispatch]
   );
-  const { mutateAsync: invokeDownloadArtifact } = useMutation(downloadArtifact, {
+  const { mutateAsync: invokeDownloadArtifact } = useMutation({
+    mutationFn: downloadArtifact,
     onSuccess: () => {
       setStatusMessage(`Downloaded ${moment().format('dddd, MMMM Do YYYY, h:mm:ss a')}`);
     },
@@ -80,10 +88,10 @@ const Workspace = ({ match }) => {
 
   // Load the artifact id specified in the URL into the global redux state
   useEffect(() => {
-    if (match.params.id == null) {
+    if (id == null) {
       handleInitializeArtifact();
     } else {
-      handleLoadArtifact(match.params.id);
+      handleLoadArtifact(id);
     }
     // NOTE: This is only safe because this useEffect should only run when the component mounts
     // It will never re-run, but that is what we want in this case.
@@ -118,7 +126,13 @@ const Workspace = ({ match }) => {
       <div className={spacingStyles.globalPadding}>
         <div className={styles.workspace}>
           <WorkspaceHeader
-            handleDownloadArtifact={(artifact, dataModel) => invokeDownloadArtifact({ artifact, dataModel })}
+            handleDownloadArtifact={async (artifact, dataModel) => {
+              try {
+                await invokeDownloadArtifact({ artifact, dataModel });
+              } catch (error) {
+                console.error('Download artifact failed:', error);
+              }
+            }}
             handleSaveArtifact={handleSaveArtifact}
             statusMessage={statusMessage}
           />

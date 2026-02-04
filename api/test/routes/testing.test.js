@@ -1,11 +1,21 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const { mock, replace, fake } = sandbox;
-const { setupExpressApp, importChaiExpect } = require('../utils');
-const Patient = require('../../src/models/patient');
-const patientIncluded = require('./fixtures/patient-included.json');
-const patientExcluded = require('./fixtures/patient-excluded.json');
-const { cloneDeep } = require('lodash');
+import request from 'supertest';
+import sinon from 'sinon';
+import _ from 'lodash';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+import { setupExpressApp, importChaiExpect } from '../utils.js';
+import Patient from '../../src/models/patient.js';
+
+const filename = fileURLToPath(import.meta.url);
+const dir = dirname(filename);
+
+const patientIncluded = JSON.parse(readFileSync(join(dir, 'fixtures/patient-included.json'), 'utf-8'));
+const patientExcluded = JSON.parse(readFileSync(join(dir, 'fixtures/patient-excluded.json'), 'utf-8'));
+
+const sandbox = sinon.createSandbox();
+const { replace, mock, fake } = sandbox;
 
 describe('Route: /authoring/api/testing', () => {
   let app, options, expect;
@@ -70,7 +80,7 @@ describe('Route: /authoring/api/testing', () => {
   describe('POST', () => {
     it('should create a new test patient for authenticated users', done => {
       replace(Patient, 'create', mock('create').withArgs(patientIncluded).resolves(new Patient(patientIncluded)));
-      const patientIncludedNoUser = cloneDeep(patientIncluded);
+      const patientIncludedNoUser = _.cloneDeep(patientIncluded);
       delete patientIncludedNoUser.user;
       request(app)
         .post('/authoring/api/testing')
@@ -88,7 +98,7 @@ describe('Route: /authoring/api/testing', () => {
 
     it('should return HTTP 500 if there is an error creating the test patient', done => {
       replace(Patient, 'create', mock('create').withArgs(patientIncluded).rejects(new Error('Connection Error')));
-      const patientIncludedNoUser = cloneDeep(patientIncluded);
+      const patientIncludedNoUser = _.cloneDeep(patientIncluded);
       delete patientIncludedNoUser.user;
       request(app)
         .post('/authoring/api/testing')
@@ -100,7 +110,7 @@ describe('Route: /authoring/api/testing', () => {
 
     it('should return HTTP 401 for unauthenticated users', done => {
       options.user = null;
-      const patientIncludedNoUser = cloneDeep(patientIncluded);
+      const patientIncludedNoUser = _.cloneDeep(patientIncluded);
       delete patientIncludedNoUser.user;
       request(app)
         .post('/authoring/api/testing')

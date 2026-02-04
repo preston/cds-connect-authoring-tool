@@ -1,6 +1,6 @@
 // Generated from cql.g4 by ANTLR 4.8
 // jshint ignore: start
-var antlr4 = require('antlr4/index');
+import antlr4 from 'antlr4/index.js';
 
 // This class defines a complete listener for a parse tree produced by cqlParser.
 function cqlListener() {
@@ -1380,4 +1380,4 @@ cqlListener.prototype.exitUnit = function(ctx) {
 
 
 
-exports.cqlListener = cqlListener;
+export { cqlListener };

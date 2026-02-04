@@ -2,11 +2,10 @@
  * Migrates artifacts that have a subelement field, applying the following changes:
  * - renames 'subelements' to 'baseElements'
  */
-'use strict';
 
-module.exports.id = 'subelement-to-baseElement';
+export const id = 'subelement-to-baseElement';
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: subelement-to-baseElement');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -55,7 +54,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

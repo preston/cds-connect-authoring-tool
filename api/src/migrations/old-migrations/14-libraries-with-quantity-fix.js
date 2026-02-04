@@ -3,10 +3,9 @@
  * - Update all FHIR.Quantity external CQL definitions, parameters, and functions to be
  * reflected as such, instead of incorrectly being labeled as System.Quantity
  */
-'use strict';
-const _ = require('lodash');
+import _ from 'lodash';
 
-module.exports.id = 'libraries-with-quantity-fix';
+export const id = 'libraries-with-quantity-fix';
 
 function updateQuantityTypes(definitions) {
   const updatedDefinitions = definitions;
@@ -59,7 +58,7 @@ function updateQuantityTypes(definitions) {
   return updatedDefinitions;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: libraries-with-quantity-fix');
   var coll = this.db.collection('cqllibraries');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -105,7 +104,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

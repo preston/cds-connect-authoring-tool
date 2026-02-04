@@ -1,7 +1,7 @@
 import 'react-app-polyfill/stable';
 
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 import configureStore from './store/configureStore';
@@ -18,9 +18,11 @@ import './styles/App.scss';
 const store = configureStore();
 window.store = store;
 
-render(
+const container = document.getElementById('root');
+const root = createRoot(container);
+
+root.render(
   <Router basename={process.env.PUBLIC_URL}>
     <Root store={store} />
-  </Router>,
-  document.getElementById('root')
+  </Router>
 );

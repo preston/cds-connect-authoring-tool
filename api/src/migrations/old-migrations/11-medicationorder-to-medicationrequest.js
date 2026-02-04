@@ -2,9 +2,8 @@
  * Migrates artifacts that have a Medication Order:
  * - renames every reference to Medication Order in an artifact to Medication Request
  */
-'use strict';
 
-module.exports.id = 'medicationorder-to-medicationrequest';
+export const id = 'medicationorder-to-medicationrequest';
 
 function parseTree(element) {
   let children = element.childInstances ? element.childInstances : [];
@@ -75,7 +74,7 @@ function parseElement(element) {
   return element;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: medicationorder-to-medicationrequest');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -138,7 +137,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

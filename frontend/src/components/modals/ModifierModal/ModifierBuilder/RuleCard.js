@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { IconButton, Stack } from '@mui/material';
 import { Clear as ClearIcon } from '@mui/icons-material';
 import clsx from 'clsx';
@@ -16,13 +16,11 @@ const RuleCard = ({ handleRemoveRule, handleUpdateRule, resourceOptions, rule })
   const { resourceProperty, operator } = rule;
   const ruleOption = resourceProperty ? resourceOptions.find(({ value }) => value === resourceProperty) : null;
 
-  const operatorsQuery = useQuery(
-    ['operators', ruleOption?.typeSpecifier],
-    () => fetchOperators(ruleOption.typeSpecifier),
-    {
-      enabled: Boolean(ruleOption)
-    }
-  );
+  const operatorsQuery = useQuery({
+    queryKey: ['operators', ruleOption?.typeSpecifier],
+    queryFn: () => fetchOperators(ruleOption.typeSpecifier),
+    enabled: Boolean(ruleOption)
+  });
 
   const renderPropertySelectValue = optionValue => {
     const selectedResourceOption = resourceOptions.find(({ value }) => value === optionValue);

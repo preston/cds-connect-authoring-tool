@@ -6,7 +6,6 @@ import {
   DateField,
   DateRangeField,
   GroupedFields,
-  NestedField,
   SelectConditionalField,
   TextAreaField,
   TextField
@@ -129,20 +128,6 @@ const unitOfTimeOptions = [
 
 const relatedArtifactOptions = [{ value: 'citation', label: 'Citation' }];
 
-const strengthOfRecommendationOptions = [
-  { value: 'strong', label: 'strong' },
-  { value: 'weak', label: 'weak' },
-  { value: 'other', label: 'other' }
-];
-
-const qualityOfEvidenceOptions = [
-  { value: 'high', label: 'high' },
-  { value: 'moderate', label: 'moderate' },
-  { value: 'low', label: 'low' },
-  { value: 'very-low', label: 'very-low' },
-  { value: 'other', label: 'other' }
-];
-
 // conditions
 
 const contextTypeConditions = {
@@ -239,20 +224,6 @@ const relatedArtifactConditions = {
   ]
 };
 
-const strengthOfRecommendationConditions = {
-  other: [
-    { type: 'button', component: AuthenticateVSACField },
-    { type: 'button', component: CodeSelectField }
-  ]
-};
-
-const qualityOfEvidenceConditions = {
-  other: [
-    { type: 'button', component: AuthenticateVSACField },
-    { type: 'button', component: CodeSelectField }
-  ]
-};
-
 // fields
 
 const contextFields = [
@@ -262,26 +233,6 @@ const contextFields = [
     component: SelectConditionalField,
     options: contextTypeOptions,
     conditions: contextTypeConditions
-  }
-];
-
-const strengthOfRecommendationFields = [
-  {
-    name: 'strengthOfRecommendation',
-    label: 'Value',
-    component: SelectConditionalField,
-    options: strengthOfRecommendationOptions,
-    conditions: strengthOfRecommendationConditions
-  }
-];
-
-const qualityOfEvidenceFields = [
-  {
-    name: 'qualityOfEvidence',
-    label: 'Value',
-    component: SelectConditionalField,
-    options: qualityOfEvidenceOptions,
-    conditions: qualityOfEvidenceConditions
   }
 ];
 
@@ -334,30 +285,6 @@ const cpgFields = [
   },
   { name: 'purpose', label: 'Purpose', component: TextAreaField, helperText: purposeHelperText },
   { name: 'usage', label: 'Usage', component: TextAreaField, helperText: usageHelperText },
-  {
-    name: 'strengthOfRecommendation',
-    label: 'Strength of Recommendation',
-    component: NestedField,
-    fields: strengthOfRecommendationFields,
-    defaultValue: {
-      strengthOfRecommendation: null,
-      code: '',
-      system: '',
-      other: ''
-    }
-  },
-  {
-    name: 'qualityOfEvidence',
-    label: 'Quality of Evidence',
-    component: NestedField,
-    fields: qualityOfEvidenceFields,
-    defaultValue: {
-      qualityOfEvidence: null,
-      code: '',
-      system: '',
-      other: ''
-    }
-  },
   { name: 'copyright', label: 'Copyright', component: TextAreaField, helperText: copyrightHelperText },
   { name: 'approvalDate', label: 'Approval Date', component: DateField },
   { name: 'lastReviewDate', label: 'Last Review Date', component: DateField },

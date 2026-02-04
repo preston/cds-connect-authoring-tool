@@ -1,5 +1,4 @@
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { createMockStore } from 'redux-test-utils';
 import { reduxState } from 'utils/test_fixtures';
 import { render } from 'utils/test-utils';
@@ -14,11 +13,7 @@ jest.mock('components/builder/workspace/Workspace', () => () => <div>Workspace C
 
 describe('<Root />', () => {
   const renderComponent = ({ path = '/', store = reduxState, ...props } = {}) =>
-    render(
-      <MemoryRouter initialEntries={[path]}>
-        <Root store={createMockStore(store)} {...props} />
-      </MemoryRouter>
-    );
+    render(<Root store={createMockStore(store)} {...props} />, { pathname: path });
 
   describe('navigation', () => {
     it('renders the Landing page', () => {

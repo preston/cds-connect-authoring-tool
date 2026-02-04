@@ -1,8 +1,8 @@
-const { CQLExporter } = require('./CQLExporter');
+import { CQLExporter } from './CQLExporter.js';
 
 function exportCQL(libraryGroup) {
   const exporter = new CQLExporter();
   return exporter.export(libraryGroup);
 }
 
-module.exports = { exportCQL };
+export default exportCQL;

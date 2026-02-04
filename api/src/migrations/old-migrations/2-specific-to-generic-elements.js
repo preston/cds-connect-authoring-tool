@@ -4,13 +4,12 @@
  * - This migration supports adding the value sets and codes to each element in the same format as new VSAC elements.
  * - The migration also supports updating necessary modifiers on those elements.
  */
-'use strict';
-const _ = require('lodash');
-const ValueSets = require('../data/valueSets');
-const pregnancyObjects = require('./utils/pregnancy-objects');
-const breastfeedingObjects = require('./utils/breastfeeding-objects');
+import _ from 'lodash';
+import ValueSets from '../data/valueSets.js';
+import pregnancyObjects from './utils/pregnancy-objects.js';
+import breastfeedingObjects from './utils/breastfeeding-objects.js';
 
-module.exports.id = 'specific-to-generic-elements';
+export const id = 'specific-to-generic-elements';
 
 // Modifier transformation functions
 
@@ -623,7 +622,7 @@ function parseTree(element) {
   return element;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: specific-to-generic-elements');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -684,7 +683,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

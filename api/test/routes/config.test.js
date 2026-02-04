@@ -1,6 +1,6 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const { setupExpressApp, importChaiExpect } = require('../utils');
+import request from 'supertest';
+import sinon from 'sinon';
+import { setupExpressApp, importChaiExpect } from '../utils.js';
 
 // NOTE: Most of the data exposed by /config is NOT user-dependent; therefore
 // authentication is not required. In normal use, however, the use will be
@@ -15,7 +15,7 @@ describe('Route: /authoring/api/config/templates', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -61,7 +61,7 @@ describe('Route: /authoring/api/config/valuesets', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -93,7 +93,7 @@ describe('Route: /authoring/api/config/valuesets/:valueset*', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -136,7 +136,7 @@ describe('Route: /authoring/api/config/conversions', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -169,7 +169,7 @@ describe('Route: /authoring/api/config/query/resources/dstu2', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -200,7 +200,7 @@ describe('Route: /authoring/api/config/query/resources/stu3', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -231,7 +231,7 @@ describe('Route: /authoring/api/config/query/resources/r4', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -262,7 +262,7 @@ describe('Route: /authoring/api/config/query/resources/operators', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 

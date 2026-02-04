@@ -1,5 +1,5 @@
-const CQLLibrary = require('../../src/models/cqlLibrary');
-const { importChaiExpect } = require('../utils');
+import CQLLibrary from '../../src/models/cqlLibrary.js';
+import { importChaiExpect } from '../utils.js';
 
 describe('CQLLibrary', () => {
   let expect;

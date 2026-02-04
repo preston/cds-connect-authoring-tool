@@ -2,9 +2,8 @@
  * Migrates artifacts that have a Medication Order:
  * - renames every reference to Medication Order in an artifact to Medication Request
  */
-'use strict';
 
-module.exports.id = 'cql-element-add-ext-args';
+export const id = 'cql-element-add-ext-args';
 
 const resolveCQLFieldType = field => {
   // These conversions are everything that we have a picker for.
@@ -87,7 +86,7 @@ function parseElement(element) {
   return element;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: cql-element-add-ext-args');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -150,7 +149,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

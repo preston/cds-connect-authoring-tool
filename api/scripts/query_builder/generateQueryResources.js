@@ -1,5 +1,5 @@
-var childProcess = require('child_process');
-var path = require('path');
+import childProcess from 'child_process';
+import path from 'path';
 
 function runScript(scriptPath, callback) {
   var invoked = false;

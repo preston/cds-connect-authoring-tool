@@ -1,5 +1,5 @@
-const Patient = require('../../src/models/patient');
-const { importChaiExpect } = require('../utils');
+import Patient from '../../src/models/patient.js';
+import { importChaiExpect } from '../utils.js';
 
 describe('Patient', () => {
   let expect;

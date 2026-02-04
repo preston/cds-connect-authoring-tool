@@ -421,11 +421,4 @@ const Code = {
   ]
 };
 
-module.exports = {
-  Search,
-  SearchWithPurpose,
-  ValueSet,
-  valueSetWithTitle,
-  ValueSetWithCounts,
-  Code
-};
+export { Search, SearchWithPurpose, ValueSet, valueSetWithTitle, ValueSetWithCounts, Code };

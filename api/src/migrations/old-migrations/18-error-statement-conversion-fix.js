@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports.id = 'error-statement-conversion-fix';
+export const id = 'error-statement-conversion-fix';
 
 const fixArtifactErrorStatement = ({ errorStatement }) => {
   if (errorStatement.ifThenClauses.length === 0) {
@@ -20,9 +20,9 @@ const fixArtifactErrorStatement = ({ errorStatement }) => {
   }
 };
 
-module.exports.fixArtifactErrorStatement = fixArtifactErrorStatement;
+export { fixArtifactErrorStatement };
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: error-statement-conversion-fix');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -68,7 +68,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

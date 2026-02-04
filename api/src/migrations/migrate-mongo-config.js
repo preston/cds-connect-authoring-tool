@@ -1,20 +1,21 @@
 // In this file you can configure migrate-mongo
-const path = require('path');
-const config = require('../config');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import config from '../config.js';
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 const mmConfig = {
   mongodb: {
     url: config.get('mongo.url'),
     options: {
-      useNewUrlParser: true, // removes a deprecation warning when connecting
-      useUnifiedTopology: true // removes a deprecating warning when connecting
       //   connectTimeoutMS: 3600000, // increase connection timeout to 1 hour
       //   socketTimeoutMS: 3600000, // increase socket timeout to 1 hour
     }
   },
 
   // The migrations dir, can be an relative or absolute path. Only edit this when really necessary.
-  migrationsDir: path.join(__dirname, 'migrations'),
+  migrationsDir: path.join(currentDir, 'migrations'),
 
   // The mongodb collection where the applied changes are stored. Only edit this when really necessary.
   changelogCollectionName: 'changelog',
@@ -27,7 +28,7 @@ const mmConfig = {
   useFileHash: false,
 
   // Don't change this, unless you know what you're doing
-  moduleSystem: 'commonjs'
+  moduleSystem: 'esm'
 };
 
-module.exports = mmConfig;
+export default mmConfig;

@@ -1,5 +1,5 @@
-const express = require('express');
-const testing = require('../handlers/testingHandler');
+import express from 'express';
+import testing from '../handlers/testingHandler.js';
 
 const TestingRouter = express.Router();
 
@@ -9,4 +9,4 @@ TestingRouter.route('/').get(testing.allGet).post(testing.singlePost);
 // Routes for /authoring/api/testing/:patient
 TestingRouter.route('/:patient').get(testing.singleGet).delete(testing.singleDelete);
 
-module.exports = TestingRouter;
+export default TestingRouter;

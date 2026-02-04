@@ -9,9 +9,8 @@
  *  args: []
  * }
  */
-'use strict';
 
-module.exports.id = 'requiredIfThenOne-to-fixed';
+export const id = 'requiredIfThenOne-to-fixed';
 
 function parseTree(element) {
   let children = element.childInstances ? element.childInstances : [];
@@ -44,7 +43,7 @@ function parseElement(element) {
   return element;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: requiredIfThenOne-to-fixed');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -107,7 +106,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

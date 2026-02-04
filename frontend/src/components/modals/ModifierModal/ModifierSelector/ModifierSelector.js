@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, IconButton } from '@mui/material';
 import { ArrowBackIos as ArrowBackIosIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,7 +27,9 @@ const ModifierSelector = ({
 }) => {
   const artifact = useSelector(state => state.artifacts.artifact);
   const query = { artifactId: artifact?._id };
-  const modifiersQuery = useQuery(['modifiers', query], () => fetchModifiers(query), {
+  const modifiersQuery = useQuery({
+    queryKey: ['modifiers', query],
+    queryFn: () => fetchModifiers(query),
     enabled: query.artifactId != null
   });
   const modifiersByInputType = modifiersQuery.data?.modifiersByInputType ?? {};

@@ -2,7 +2,7 @@ name: cds-connect-authoring-tool-stack
 services:
   cds-at:
     # build: .
-    image: p3000/cds-connect-authoring-tool:latest
+    image: hlseven/cds-connect-authoring-tool:latest
     environment:
       MONGO_URL: mongodb://cds-at-mongo/cds_authoring
       CQL_TO_ELM_URL: http://cds-at-cql2elm:8080/cql/translator

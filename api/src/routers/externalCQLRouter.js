@@ -1,5 +1,5 @@
-const express = require('express');
-const externalCQL = require('../handlers/externalCQLHandler');
+import express from 'express';
+import externalCQL from '../handlers/externalCQLHandler.js';
 
 const ExternalCQLRouter = express.Router();
 
@@ -14,4 +14,4 @@ ExternalCQLRouter.route('/details/:id').get(externalCQL.singleGet);
 // Routes for /authoring/api/externalCQL/:externalCQL
 ExternalCQLRouter.route('/:id').delete(externalCQL.singleDelete);
 
-module.exports = ExternalCQLRouter;
+export default ExternalCQLRouter;

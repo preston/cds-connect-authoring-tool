@@ -1,12 +1,26 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const { assert, fake, mock, replace } = sandbox;
-const { setupExpressApp } = require('../utils');
-const FHIRClient = require('../../src/vsac/FHIRClient');
-const HL7AdministrativeGenderVS = require('./fixtures/hl7-administrative-gender-vs.json');
-const HyperproinsulinemiaCode = require('./fixtures/hyperproinsulinemia-code.json');
-const ONCAdministrativeSexFhirVS = require('./fixtures/onc-administrative-sex-fhir-vs.json');
-const VSSearchResults = require('./fixtures/vs-search-results.json');
+import request from 'supertest';
+import sinon from 'sinon';
+import FHIRClient from '../../src/vsac/FHIRClient.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+import { setupExpressApp } from '../utils.js';
+
+const filename = fileURLToPath(import.meta.url);
+const dir = dirname(filename);
+
+const HL7AdministrativeGenderVS = JSON.parse(
+  readFileSync(join(dir, 'fixtures/hl7-administrative-gender-vs.json'), 'utf-8')
+);
+const HyperproinsulinemiaCode = JSON.parse(readFileSync(join(dir, 'fixtures/hyperproinsulinemia-code.json'), 'utf-8'));
+const ONCAdministrativeSexFhirVS = JSON.parse(
+  readFileSync(join(dir, 'fixtures/onc-administrative-sex-fhir-vs.json'), 'utf-8')
+);
+const VSSearchResults = JSON.parse(readFileSync(join(dir, 'fixtures/vs-search-results.json'), 'utf-8'));
+
+const sandbox = sinon.createSandbox();
+const { replace, mock, fake, assert } = sandbox;
 
 describe('Route: /authoring/api/fhir/login', () => {
   let app, options;
@@ -22,10 +36,10 @@ describe('Route: /authoring/api/fhir/login', () => {
 
   describe('POST', () => {
     it('should login to VSAC when proper credentials are supplied', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'getOneValueSet',
-        mock('getOneValueSet').withArgs('', 'my-api-key').resolves(ONCAdministrativeSexFhirVS)
+        sandbox.mock('getOneValueSet').withArgs('', 'my-api-key').resolves(ONCAdministrativeSexFhirVS)
       );
       request(app)
         .post('/authoring/api/fhir/login')
@@ -34,10 +48,11 @@ describe('Route: /authoring/api/fhir/login', () => {
     });
 
     it('should login to VSAC when proper credentials are supplied even when VS is not found', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'getOneValueSet',
-        mock('getOneValueSet')
+        sandbox
+          .mock('getOneValueSet')
           .withArgs('', 'my-api-key')
           .rejects({ response: { status: 404 } })
       );
@@ -48,10 +63,11 @@ describe('Route: /authoring/api/fhir/login', () => {
     });
 
     it('should return HTTP 401 when wrong credentials are supplied', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'getOneValueSet',
-        mock('getOneValueSet')
+        sandbox
+          .mock('getOneValueSet')
           .withArgs('', 'my-wrong-api-key')
           .rejects({ response: { status: 401 } })
       );
@@ -62,22 +78,23 @@ describe('Route: /authoring/api/fhir/login', () => {
     });
 
     it('should return HTTP 401 when no credentials are supplied', done => {
-      const clientFake = fake.rejects('should not be called');
-      replace(FHIRClient, 'getOneValueSet', clientFake);
+      const clientFake = sandbox.fake.rejects('should not be called');
+      sandbox.replace(FHIRClient, 'getOneValueSet', clientFake);
       request(app)
         .post('/authoring/api/fhir/login')
         .expect(401)
         .expect(() => {
-          assert.notCalled(clientFake);
+          sandbox.assert.notCalled(clientFake);
         })
         .end(done);
     });
 
     it('should relay any error code from the VSAC FHIR API', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'getOneValueSet',
-        mock('getOneValueSet')
+        sandbox
+          .mock('getOneValueSet')
           .withArgs('', 'my-api-key')
           .rejects({ response: { status: 502 } })
       );
@@ -88,7 +105,11 @@ describe('Route: /authoring/api/fhir/login', () => {
     });
 
     it('should return HTTP 500 when unknown error occurs w/ no response code from VSAC FHIR API', done => {
-      replace(FHIRClient, 'getOneValueSet', mock('getOneValueSet').withArgs('', 'my-api-key').rejects(new Error()));
+      sandbox.replace(
+        FHIRClient,
+        'getOneValueSet',
+        sandbox.mock('getOneValueSet').withArgs('', 'my-api-key').rejects(new Error())
+      );
       request(app)
         .post('/authoring/api/fhir/login')
         .set('Authorization', `Basic ${Buffer.from(':my-api-key').toString('base64')}`)
@@ -98,10 +119,14 @@ describe('Route: /authoring/api/fhir/login', () => {
 });
 
 describe('Route: /authoring/api/fhir/search', () => {
-  let app, options;
+  let app, options, sandbox;
 
   before(() => {
     [app, options] = setupExpressApp();
+  });
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
   });
 
   afterEach(() => {
@@ -111,10 +136,10 @@ describe('Route: /authoring/api/fhir/search', () => {
 
   describe('GET', () => {
     it('should return search results', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'searchForValueSets',
-        mock('searchForValueSets').withArgs('administrative', '', 'my-api-key').resolves(VSSearchResults)
+        sandbox.mock('searchForValueSets').withArgs('administrative', '', 'my-api-key').resolves(VSSearchResults)
       );
       request(app)
         .get('/authoring/api/fhir/search?keyword=administrative')
@@ -125,10 +150,11 @@ describe('Route: /authoring/api/fhir/search', () => {
     });
 
     it('should return HTTP 401 when wrong credentials are supplied', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'searchForValueSets',
-        mock('searchForValueSets')
+        sandbox
+          .mock('searchForValueSets')
           .withArgs('administrative', '', 'my-api-key')
           .rejects({ response: { status: 401 } })
       );
@@ -140,23 +166,24 @@ describe('Route: /authoring/api/fhir/search', () => {
     });
 
     it('should return HTTP 401 when no credentials are supplied', done => {
-      const clientFake = fake.rejects('should not be called');
-      replace(FHIRClient, 'searchForValueSets', clientFake);
+      const clientFake = sandbox.fake.rejects('should not be called');
+      sandbox.replace(FHIRClient, 'searchForValueSets', clientFake);
       request(app)
         .get('/authoring/api/fhir/search?keyword=administrative')
         .set('Accept', 'application/json')
         .expect(401)
         .expect(() => {
-          assert.notCalled(clientFake);
+          sandbox.assert.notCalled(clientFake);
         })
         .end(done);
     });
 
     it('should relay any error code from the VSAC FHIR API', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'searchForValueSets',
-        mock('searchForValueSets')
+        sandbox
+          .mock('searchForValueSets')
           .withArgs('administrative', '', 'my-api-key')
           .rejects({ response: { status: 502 } })
       );
@@ -168,10 +195,10 @@ describe('Route: /authoring/api/fhir/search', () => {
     });
 
     it('should return HTTP 500 when unknown error occurs w/ no response code from VSAC FHIR API', done => {
-      replace(
+      sandbox.replace(
         FHIRClient,
         'searchForValueSets',
-        mock('searchForValueSets').withArgs('administrative', '', 'my-api-key').rejects(new Error())
+        sandbox.mock('searchForValueSets').withArgs('administrative', '', 'my-api-key').rejects(new Error())
       );
       request(app)
         .get('/authoring/api/fhir/search?keyword=administrative')

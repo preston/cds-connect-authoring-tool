@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert, CircularProgress } from '@mui/material';
 import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import clsx from 'clsx';
@@ -17,9 +17,10 @@ const PatientDropZone = () => {
   const [patientData, setPatientData] = useState(null);
   const [versionOptions, setVersionOptions] = useState(['R4', 'STU3', 'DSTU2']);
   const queryClient = useQueryClient();
-  const { mutateAsync: asyncAddPatient, isLoading: isAddingPatient } = useMutation(addPatient, {
+  const { mutateAsync: asyncAddPatient, isLoading: isAddingPatient } = useMutation({
+    mutationFn: addPatient,
     onSuccess: () => {
-      queryClient.invalidateQueries('patients');
+      queryClient.invalidateQueries(['patients']);
       setShowPatientUploadedMessage(true);
     }
   });
@@ -31,10 +32,14 @@ const PatientDropZone = () => {
     setClose(false);
   };
 
-  const handleSelectVersion = version => {
-    asyncAddPatient({ patient: patientData, fhirVersion: version });
-    setShowPatientVersionModal(false);
-    setVersionOptions(['R4', 'STU3', 'DSTU2']);
+  const handleSelectVersion = async version => {
+    try {
+      await asyncAddPatient({ patient: patientData, fhirVersion: version });
+      setShowPatientVersionModal(false);
+      setVersionOptions(['R4', 'STU3', 'DSTU2']);
+    } catch (error) {
+      console.error('Add patient failed:', error);
+    }
   };
 
   const handleOnDrop = useCallback(
@@ -44,7 +49,7 @@ const PatientDropZone = () => {
       setShowUploadError(false);
 
       const reader = new FileReader();
-      reader.onload = event => {
+      reader.onload = async event => {
         try {
           const parsedPatientData = JSON.parse(event.target.result);
 
@@ -53,7 +58,11 @@ const PatientDropZone = () => {
             const versions = autoDetectFHIRVersion({ patient: parsedPatientData });
             if (versions.length === 1) {
               // If version detected, add the patient right away
-              asyncAddPatient({ patient: parsedPatientData, fhirVersion: versions[0] });
+              try {
+                await asyncAddPatient({ patient: parsedPatientData, fhirVersion: versions[0] });
+              } catch (error) {
+                console.error('Add patient failed:', error);
+              }
             } else {
               setVersionOptions(versions);
               setShowPatientVersionModal(true);

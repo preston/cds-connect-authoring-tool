@@ -1,7 +1,7 @@
-const Patient = require('../models/patient');
-const { sendUnauthorized } = require('./common');
+import Patient from '../models/patient.js';
+import { sendUnauthorized } from './common.js';
 
-module.exports = {
+export default {
   allGet,
   singleGet,
   singlePost,

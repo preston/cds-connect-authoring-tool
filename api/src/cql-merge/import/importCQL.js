@@ -1,4 +1,4 @@
-const { CQLImporter } = require('./CQLImporter');
+import { CQLImporter } from './CQLImporter.js';
 
 function importCQL(libraryRawCQL, dependencyRawCQLs) {
   const importer = new CQLImporter();
@@ -6,4 +6,4 @@ function importCQL(libraryRawCQL, dependencyRawCQLs) {
   return importer.import(libraryRawCQL, dependencyRawCQLs);
 }
 
-module.exports = { importCQL };
+export default importCQL;

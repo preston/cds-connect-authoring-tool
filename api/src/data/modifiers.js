@@ -55,7 +55,7 @@ const everyElement = elementLists.concat([
   'other'
 ]);
 
-module.exports = [
+export default [
   // Observations
   {
     id: 'VerifiedObservation',
@@ -73,7 +73,7 @@ module.exports = [
     values: { unit: undefined },
     validator: { type: 'require', fields: ['unit'], args: null },
     cqlTemplate: 'WithUnit',
-    cqlLibraryFunction: 'C3F.WithUnit'
+    cqlLibraryFunction: 'CqlHelpers.WithUnit'
   },
   {
     id: 'ValueComparisonNumber',

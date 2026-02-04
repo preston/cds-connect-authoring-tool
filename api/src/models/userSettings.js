@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -12,4 +12,4 @@ const UserSettingsSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model('UserSettings', UserSettingsSchema);
+export default mongoose.model('UserSettings', UserSettingsSchema);

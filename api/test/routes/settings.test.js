@@ -1,8 +1,11 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const { mock, replace, fake } = sandbox;
-const { setupExpressApp } = require('../utils');
-const UserSettings = require('../../src/models/userSettings');
+import request from 'supertest';
+import sinon from 'sinon';
+
+import { setupExpressApp } from '../utils.js';
+import UserSettings from '../../src/models/userSettings.js';
+
+const sandbox = sinon.createSandbox();
+const { replace, mock, fake } = sandbox;
 
 describe('Route: /authoring/api/settings', () => {
   let app, options;

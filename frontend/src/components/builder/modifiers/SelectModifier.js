@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, CircularProgress } from '@mui/material';
 import clsx from 'clsx';
 
@@ -10,7 +10,10 @@ import { useFieldStyles } from 'styles/hooks';
 import useStyles from './styles';
 
 const SelectModifier = ({ handleUpdateModifier, name, value }) => {
-  const { data, error, isLoading, isSuccess } = useQuery('conversion_functions', () => fetchConversionFunctions());
+  const { data, error, isLoading, isSuccess } = useQuery({
+    queryKey: ['conversion_functions'],
+    queryFn: () => fetchConversionFunctions()
+  });
   const conversionFunctions = data ?? [];
   const options = conversionFunctions.map(option => ({ value: option.name, label: option.description }));
   const fieldStyles = useFieldStyles();

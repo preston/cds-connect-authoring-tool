@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   async up(db, client) {
     const count = await db.collection('artifacts').estimatedDocumentCount();
     console.log('This is a no-op migration to test migrate-mongo UP. It has no side-effects.');

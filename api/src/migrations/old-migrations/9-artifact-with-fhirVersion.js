@@ -2,11 +2,10 @@
  * Migrates artifacts without a fhirVersion set to have a default value:
  * - adds { fhirVersion: '' } to all artifacts
  */
-'use strict';
 
-module.exports.id = 'artifact-with-fhirVersion';
+export const id = 'artifact-with-fhirVersion';
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: artifact-with-fhirVersion');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -50,7 +49,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

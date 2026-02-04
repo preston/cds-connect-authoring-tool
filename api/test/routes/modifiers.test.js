@@ -1,9 +1,19 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const { mock, fake, replace } = sandbox;
-const { setupExpressApp, importChaiExpect } = require('../utils');
-const CQLLibrary = require('../../src/models/cqlLibrary');
-const multiFunctionLib = require('./fixtures/multifunction-external-lib.json');
+import request from 'supertest';
+import sinon from 'sinon';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+import { setupExpressApp, importChaiExpect } from '../utils.js';
+import CQLLibrary from '../../src/models/cqlLibrary.js';
+
+const filename = fileURLToPath(import.meta.url);
+const dir = dirname(filename);
+
+const multiFunctionLib = JSON.parse(readFileSync(join(dir, './fixtures/multifunction-external-lib.json'), 'utf-8'));
+
+const sandbox = sinon.createSandbox();
+const { replace, mock, fake } = sandbox;
 
 describe('Route: /authoring/api/modifiers/:artifact', () => {
   let app, options, expect;

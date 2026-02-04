@@ -56,7 +56,7 @@ const UserGuide = () => {
               </>
             }
           />{' '}
-          logic without the need to fully understand the CQL specification.
+          logic without the need to fully understand the normative CQL v1.5.3 specification to which in comforms.
         </div>
         <div>
           Authoring is based on defining elements using a broad type, such as Condition, and applying one or more value
@@ -65,9 +65,11 @@ const UserGuide = () => {
           more.
         </div>
         <div>
-          The CDS Authoring Tool is part of the <a href="https://cds.ahrq.gov/cdsconnect">CDS Connect</a> project,
-          sponsored by the Agency for Healthcare Research and Quality (AHRQ), and initially developed under contract
-          with AHRQ by MITRE's{' '}
+          This version of the CDS Authoring Tool is maintained by HL7 community stakeholders. The source code was
+          originally part of the{' '}
+          <a href="https://digital.ahrq.gov/health-it-tools-and-resources/clinical-decision-support-cds">CDS Connect</a>
+          project, sponsored by the Agency for Healthcare Research and Quality (AHRQ), and initially developed under
+          contract with AHRQ by MITRE's{' '}
           <Link external href="https://www.mitre.org/our-impact/rd-centers/health-ffrdc" text={'Health FFRDC'} />. For
           an overview of CDS Connect and how the CDS Authoring Tool fits in to the CDS Connect lifecycle, watch the{' '}
           <Link
@@ -107,9 +109,6 @@ const UserGuide = () => {
             <div>
               To request a CDS Authoring Tool account:
               <ol>
-                <li>
-                  Navigate to <a href="https://cds.ahrq.gov/authoring/">https://cds.ahrq.gov/authoring/</a>.
-                </li>
                 <li>Click on the "SIGN UP" button in the middle of the screen.</li>
                 <li>This will launch a new window with a form that must be filled out and submitted.</li>
                 <li>

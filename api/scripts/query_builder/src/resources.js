@@ -626,6 +626,4 @@ const supportedResourceProperties = [
   }
 ];
 
-module.exports = {
-  supportedResourceProperties: supportedResourceProperties
-};
+export { supportedResourceProperties };

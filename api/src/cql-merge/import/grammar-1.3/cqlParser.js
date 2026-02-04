@@ -1,8 +1,8 @@
 // Generated from cql.g4 by ANTLR 4.8
 // jshint ignore: start
-var antlr4 = require('antlr4/index');
-var cqlListener = require('./cqlListener').cqlListener;
-var cqlVisitor = require('./cqlVisitor').cqlVisitor;
+import antlr4 from 'antlr4/index.js';
+import { cqlListener } from './cqlListener.js';
+import { cqlVisitor } from './cqlVisitor.js';
 
 var grammarFileName = "cql.g4";
 
@@ -12613,4 +12613,4 @@ cqlParser.prototype.expressionTerm_sempred = function(localctx, predIndex) {
 };
 
 
-exports.cqlParser = cqlParser;
+export { cqlParser };

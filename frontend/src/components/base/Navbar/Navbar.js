@@ -68,7 +68,7 @@ const Navbar = ({ isAuthenticated }) => {
         textColor="inherit"
         value={tabNavigationValue({ pathname, isAuthenticated })}
       >
-        <Navtab label="Home" index={0} value="/" exact />
+        <Navtab label="Home" index={0} value="/" />
 
         {isAuthenticated && [
           <Navtab key={1} label="Artifacts" index={1} value="/artifacts" />,

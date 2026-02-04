@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { CircularProgress, IconButton } from '@mui/material';
 import { ArrowBackIos as ArrowBackIosIcon } from '@mui/icons-material';
 
@@ -26,9 +26,10 @@ const ModifierBuilder = ({
       where: { id: 'root', conjunctionType: 'and', rules: [] }
     }
   );
-  const resourceQuery = useQuery(['resources', { fhirVersion, elementInstanceReturnType }], () =>
-    fetchResource(fhirVersion, elementInstanceReturnType)
-  );
+  const resourceQuery = useQuery({
+    queryKey: ['resources', { fhirVersion, elementInstanceReturnType }],
+    queryFn: () => fetchResource(fhirVersion, elementInstanceReturnType)
+  });
   const resourceOptions = useMemo(() => getResourceOptions(resourceQuery.data), [resourceQuery.data]);
   const spacingStyles = useSpacingStyles();
   const styles = useStyles();

@@ -1,6 +1,6 @@
-const config = require('../config');
+import config from '../config.js';
 
-module.exports = (req, res) => {
+export default (req, res) => {
   res.type('js');
   // If ForeSee is not active, just send a (mostly) blank response.
   if (!config.get('foreSee.active')) {

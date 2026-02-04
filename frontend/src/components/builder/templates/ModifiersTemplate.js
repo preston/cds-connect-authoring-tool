@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, Divider, IconButton, Stack } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 
@@ -25,7 +25,9 @@ const ModifierTemplate = ({
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false);
   const artifact = useSelector(state => state.artifacts.artifact);
   const query = { artifactId: artifact?._id };
-  const modifiersQuery = useQuery(['modifiers', query], () => fetchModifiers(query), {
+  const modifiersQuery = useQuery({
+    queryKey: ['modifiers', query],
+    queryFn: () => fetchModifiers(query),
     enabled: query.artifactId != null
   });
   const modifierMap = modifiersQuery.data?.modifierMap ?? {};

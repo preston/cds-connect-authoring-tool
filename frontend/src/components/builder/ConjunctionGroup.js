@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { CircularProgress } from '@mui/material';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import fetchTemplates from 'queries/fetchTemplates';
 import { ArtifactElement } from 'components/builder/artifact-element';
 import { GroupElement, ConjunctionTypeSelect } from 'components/builder/group-element';
@@ -30,7 +30,9 @@ const ConjunctionGroup = ({
   validateReturnType
 }) => {
   const artifact = useSelector(state => state.artifacts.artifact);
-  const { data: templates, isLoading: isTemplatesLoading } = useQuery('templates', () => fetchTemplates(), {
+  const { data: templates, isLoading: isTemplatesLoading } = useQuery({
+    queryKey: ['templates'],
+    queryFn: () => fetchTemplates(),
     staleTime: Infinity
   });
 

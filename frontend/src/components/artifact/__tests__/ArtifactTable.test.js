@@ -74,11 +74,11 @@ describe('<ArtifactTable />', () => {
     renderComponent();
 
     await waitFor(() => userEvent.click(screen.getAllByRole('button', { name: 'edit info' })[0]));
-    expect(await screen.findByText('Edit Artifact Details')).toBeInTheDocument();
+    expect(await screen.findByText('Edit Library Details')).toBeInTheDocument();
 
     await waitFor(() => userEvent.click(screen.getByRole('button', { name: 'close' })));
     await waitFor(() => {
-      expect(screen.queryByText('Edit Artifact Details')).not.toBeInTheDocument();
+      expect(screen.queryByText('Edit Library Details')).not.toBeInTheDocument();
     });
   });
 

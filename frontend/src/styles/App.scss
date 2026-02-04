@@ -2,15 +2,15 @@
 @import "elements/variables";
 
 /* ------------------------- IMPORT 3RD PARTY FONTS ------------------------ */
-@import "~@fontsource/source-sans-pro/latin.css";
-@import "~@fontsource/roboto-mono/latin.css";
-@import "~@fontsource/public-sans/latin.css";
-@import "~@fontsource/merriweather/latin.css";
+@import "../../node_modules/@fontsource/source-sans-pro/latin.css";
+@import "../../node_modules/@fontsource/roboto-mono/latin.css";
+@import "../../node_modules/@fontsource/public-sans/latin.css";
+@import "../../node_modules/@fontsource/merriweather/latin.css";
 
 /* ------------------------- IMPORT 3RD PARTY VENDORS ---------------------- */
-@import "~bootstrap/scss/bootstrap";
-@import "~tocbot/src/scss/tocbot-core";
-@import "~tocbot/src/scss/tocbot-default-theme";
+@import "../../node_modules/bootstrap/scss/bootstrap";
+@import "../../node_modules/tocbot/src/scss/tocbot-core";
+@import "../../node_modules/tocbot/src/scss/tocbot-default-theme";
 
 /* ------------------------- IMPORT CUSTOM SCSS ---------------------------- */
 // site-wide elements
@@ -36,6 +36,8 @@
 @import "vendors/ahrq-uswds2.0";
 @import "vendors/ahrq-global";
 @import "vendors/ahrq";
+
+/* Rest of your font-face declarations... */
 
 /* ------------------------- FONTS ----------------------------------------- */
 

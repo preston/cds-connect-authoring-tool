@@ -816,9 +816,4 @@ const notPregnantCMS347v1 = {
   ]
 };
 
-module.exports = {
-  pregnant,
-  notPregnant,
-  pregnantCMS347v1,
-  notPregnantCMS347v1
-};
+export { pregnant, notPregnant, pregnantCMS347v1, notPregnantCMS347v1 };

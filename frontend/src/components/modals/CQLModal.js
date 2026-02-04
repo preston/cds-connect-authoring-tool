@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Modal, CqlViewer } from 'components/elements';
 import { viewCql } from 'queries/artifacts';
 
@@ -8,7 +8,9 @@ const CQLModal = ({ handleCloseModal, artifact, dataModel }) => {
   const [executionError, setExecutionError] = useState(null);
   // For now we just show a single CQL file
   const [cqlFile, setCqlFile] = useState(null);
-  const { mutateAsync: asyncViewCql, isLoading } = useMutation(viewCql);
+  const { mutateAsync: asyncViewCql, isLoading } = useMutation({
+    mutationFn: viewCql
+  });
 
   useEffect(() => {
     let isSubscribed = true;

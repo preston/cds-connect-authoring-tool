@@ -1,6 +1,6 @@
-const FHIRClient = require('../vsac/FHIRClient');
-const auth = require('basic-auth');
-const { sendUnauthorized } = require('./common');
+import FHIRClient from '../vsac/FHIRClient.js';
+import auth from 'basic-auth';
+import { sendUnauthorized } from './common.js';
 
 function login(req, res) {
   const user = auth(req);
@@ -69,7 +69,7 @@ function getCode(req, res) {
     });
 }
 
-module.exports = {
+export default {
   login,
   getValueSet,
   searchForValueSets,

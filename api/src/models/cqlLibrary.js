@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -16,4 +16,4 @@ const cqlLibrarySchema = new Schema(
   }
 );
 
-module.exports = mongoose.model('CQLLibrary', cqlLibrarySchema);
+export default mongoose.model('CQLLibrary', cqlLibrarySchema);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { CircularProgress } from '@mui/material';
 
 import ExternalCqlDropZone from './ExternalCqlDropZone';
@@ -10,7 +10,9 @@ import { fetchExternalCqlList } from 'queries/external-cql';
 const ExternalCql = () => {
   const artifact = useSelector(state => state.artifacts.artifact);
   const query = { artifactId: artifact._id };
-  const { data: externalCqlList, isLoading } = useQuery(['externalCql', query], () => fetchExternalCqlList(query), {
+  const { data: externalCqlList, isLoading } = useQuery({
+    queryKey: ['externalCql', artifact._id],
+    queryFn: () => fetchExternalCqlList(query),
     enabled: artifact._id != null
   });
 

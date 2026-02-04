@@ -1,6 +1,6 @@
-const passport = require('passport');
-const config = require('../config');
-const { sendUnauthorized } = require('./common');
+import passport from 'passport';
+import config from '../config.js';
+import { sendUnauthorized } from './common.js';
 
 function login(req, res, next) {
   // If the user is already logged in, log out first
@@ -30,8 +30,7 @@ function login(req, res, next) {
     const remoteIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     if (err) {
       console.log(
-        `${new Date().toISOString()}: Login FAILURE: ${req?.body?.username || 'unknown'} (${remoteIP})`,
-        err.message ?? err
+        `${new Date().toISOString()}: Login FAILURE: ${req?.body?.username || 'unknown'} (${remoteIP})`, err
       );
       return sendUnauthorized(res);
     } else {
@@ -56,7 +55,7 @@ function currentUser(req, res) {
   }
 }
 
-module.exports = {
+export default {
   login,
   currentUser,
   logout

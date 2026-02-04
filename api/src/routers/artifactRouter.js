@@ -1,5 +1,5 @@
-const express = require('express');
-const artifact = require('../handlers/artifactHandler');
+import express from 'express';
+import artifact from '../handlers/artifactHandler.js';
 const ArtifactRouter = express.Router();
 
 // Routes for /authoring/api/artifacts
@@ -11,4 +11,4 @@ ArtifactRouter.route('/:artifact').get(artifact.singleGet).delete(artifact.singl
 // Route for /authoring/api/artifacts/:artifact/duplicate
 ArtifactRouter.route('/:artifact/duplicate').post(artifact.duplicate);
 
-module.exports = ArtifactRouter;
+export default ArtifactRouter;

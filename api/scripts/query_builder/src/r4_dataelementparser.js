@@ -1,8 +1,8 @@
-var fs = require('fs');
-var path = require('path');
-var _ = require('lodash');
-var dataElements = require('../data/r4_dataelements.json');
-var resources = require('./resources.js').supportedResourceProperties;
+import fs from 'fs';
+import path from 'path';
+import _ from 'lodash';
+import dataElements from '../data/r4_dataelements.json' assert { type: 'json' };
+import { supportedResourceProperties as resources } from './resources.js';
 
 let generatedResources = [];
 // For each resource in the datafile

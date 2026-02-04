@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const nock = require('nock');
-const _ = require('lodash');
-const { buildCQL, makeCQLtoELMRequest, formatCQL } = require('../../src/handlers/cqlHandler');
-const { importChaiExpect } = require('../utils');
+import fs from 'fs';
+import path from 'path';
+import nock from 'nock';
+import _ from 'lodash';
+import cqlHandler from '../../src/handlers/cqlHandler.js';
+import { importChaiExpect } from '../utils.js';
 
 const baseArtifact = {
   name: 'a test',
@@ -17,6 +17,8 @@ const baseArtifact = {
   parameters: [],
   errorStatement: {}
 };
+
+const mydirname = path.dirname(new URL(import.meta.url).pathname);
 
 describe('cqlHandler', () => {
   let expect;
@@ -229,7 +231,7 @@ describe('cqlHandler', () => {
         else: ''
       };
       it('should define and use the correct element names for key parts of the logic', () => {
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
         expect(converted).to.contain('define "Recommendation":');
         expect(converted).to.contain('define "MeetsInclusionCriteria":');
@@ -486,7 +488,7 @@ describe('cqlHandler', () => {
       raw.errorStatement = { ifThenClauses: [], elseClause: '' };
 
       it('should use the specified subpopulation boolean logic in the recommendation logic', () => {
-        const artifact = buildCQL(_.cloneDeep(raw));
+        const artifact = cqlHandler.buildCQL(_.cloneDeep(raw));
         const converted = artifact.toString();
         // if "Subpopulation 1" and "Subpopulation 2" then 'Both subpopulations rec.'
         // else if "Subpopulation 1" then 'subpop 1 only'
@@ -504,7 +506,7 @@ describe('cqlHandler', () => {
       it('should return null subpopulations when Inpopulation is not true', () => {
         const withOneRec = _.cloneDeep(raw);
         withOneRec.recommendations.splice(1);
-        const artifact = buildCQL(withOneRec);
+        const artifact = cqlHandler.buildCQL(withOneRec);
         const converted = artifact.toString();
         // define "Subpopulation 1":
         //   if "InPopulation" is not true then
@@ -521,7 +523,7 @@ describe('cqlHandler', () => {
         const withRationales = _.cloneDeep(raw);
         withRationales.recommendations[1].rationale = 'subpop 1 with rationale';
         withRationales.recommendations[4].rationale = 'fallback rationale';
-        const artifact = buildCQL(withRationales);
+        const artifact = cqlHandler.buildCQL(withRationales);
         const converted = artifact.toString();
         // if "Subpopulation 1" and "Subpopulation 2" then null
         // else if "Subpopulation 1" then 'subpop 1 with rationale'
@@ -574,7 +576,7 @@ describe('cqlHandler', () => {
           ],
           elseClause: 'else do this'
         };
-        const artifact = buildCQL(withErrors);
+        const artifact = cqlHandler.buildCQL(withErrors);
         const converted = artifact.toString();
 
         const expectedResult = `define "Errors":
@@ -599,7 +601,7 @@ describe('cqlHandler', () => {
         // TODO: I'm not sure why we do it this way; as it's not really a subpopulation if you don't check InPopulation!
         const noRecs = _.cloneDeep(raw);
         noRecs.recommendations = [];
-        const artifact = buildCQL(noRecs);
+        const artifact = cqlHandler.buildCQL(noRecs);
         const converted = artifact.toString();
         // define "Subpopulation 1":
         //   if "InPopulation" is not true then
@@ -798,7 +800,7 @@ describe('cqlHandler', () => {
       ];
 
       it('should export modifiers as CQL function calls', () => {
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
         expect(converted).to.contain('Count(C3F.ActiveOrConfirmedAllergyIntolerance([AllergyIntolerance])) > 0');
       });
@@ -806,7 +808,7 @@ describe('cqlHandler', () => {
       it('should export query modifiers as CQL queries (R4 4.0.x)', () => {
         const rawQueryR4 = _.cloneDeep(rawQuery);
         rawQueryR4.dataModel.version = '4.0.x';
-        const artifact = buildCQL(rawQueryR4);
+        const artifact = cqlHandler.buildCQL(rawQueryR4);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.onset as FHIR.dateTime is not null ' +
@@ -817,7 +819,7 @@ describe('cqlHandler', () => {
       it('should export query modifiers as CQL queries (R4 4.0.1)', () => {
         const rawQueryR4 = _.cloneDeep(rawQuery);
         rawQueryR4.dataModel.version = '4.0.1';
-        const artifact = buildCQL(rawQueryR4);
+        const artifact = cqlHandler.buildCQL(rawQueryR4);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.onset as FHIR.dateTime is not null ' +
@@ -828,7 +830,7 @@ describe('cqlHandler', () => {
       it('should export query modifiers as CQL queries (R4 4.0.0)', () => {
         const rawQueryR4 = _.cloneDeep(rawQuery);
         rawQueryR4.dataModel.version = '4.0.0';
-        const artifact = buildCQL(rawQueryR4);
+        const artifact = cqlHandler.buildCQL(rawQueryR4);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.onset as FHIR.dateTime is not null ' +
@@ -839,7 +841,7 @@ describe('cqlHandler', () => {
       it('should export query modifiers as CQL queries (STU3)', () => {
         const rawQuerySTU3 = _.cloneDeep(rawQuery);
         rawQuerySTU3.dataModel.version = '3.0.0';
-        const artifact = buildCQL(rawQuerySTU3);
+        const artifact = cqlHandler.buildCQL(rawQuerySTU3);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.onset as FHIR.dateTime is not null ' +
@@ -850,7 +852,7 @@ describe('cqlHandler', () => {
       it('should export query modifiers as CQL queries (DSTU2)', () => {
         const rawQueryDSTU2 = _.cloneDeep(rawQuery);
         rawQueryDSTU2.dataModel.version = '1.0.2';
-        const artifact = buildCQL(rawQueryDSTU2);
+        const artifact = cqlHandler.buildCQL(rawQueryDSTU2);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.onsetDateTime is not null ' +
@@ -859,7 +861,7 @@ describe('cqlHandler', () => {
       });
 
       it('should export standard and query modifiers at the same time', () => {
-        const artifact = buildCQL(rawStandardAndQuery);
+        const artifact = cqlHandler.buildCQL(rawStandardAndQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '(C3F.ActiveOrConfirmedAllergyIntolerance([AllergyIntolerance])) AI where ' +
@@ -1031,7 +1033,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain('[AllergyIntolerance] AI where (AI.verificationStatus is null)');
       });
@@ -1047,7 +1049,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         // NOTE: valueQuantity --> value as FHIR.Quantity
         expect(converted).to.contain('[Observation] Ob where (Ob.value as FHIR.Quantity is null)');
@@ -1064,9 +1066,9 @@ describe('cqlHandler', () => {
           ]
         };
         const stu3RawBaseQuery = _.cloneDeep(rawBaseQuery);
-        (stu3RawBaseQuery.dataModel = { name: 'FHIR', version: '3.0.0' }),
-          (stu3RawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest);
-        const artifact = buildCQL(stu3RawBaseQuery);
+        ((stu3RawBaseQuery.dataModel = { name: 'FHIR', version: '3.0.0' }),
+          (stu3RawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest));
+        const artifact = cqlHandler.buildCQL(stu3RawBaseQuery);
         const converted = artifact.toString();
         // NOTE: valueQuantity --> value as FHIR.Quantity
         expect(converted).to.contain('[Observation] Ob where (Ob.value as FHIR.Quantity is null)');
@@ -1083,9 +1085,9 @@ describe('cqlHandler', () => {
           ]
         };
         const stu3RawBaseQuery = _.cloneDeep(rawBaseQuery);
-        (stu3RawBaseQuery.dataModel = { name: 'FHIR', version: '1.0.2' }),
-          (stu3RawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest);
-        const artifact = buildCQL(stu3RawBaseQuery);
+        ((stu3RawBaseQuery.dataModel = { name: 'FHIR', version: '1.0.2' }),
+          (stu3RawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest));
+        const artifact = cqlHandler.buildCQL(stu3RawBaseQuery);
         const converted = artifact.toString();
         // NOTE: valueQuantity stays as-is (no cast)
         expect(converted).to.contain('[Observation] Ob where (Ob.valueQuantity is null)');
@@ -1102,7 +1104,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain('[AllergyIntolerance] AI where (AI.verificationStatus is not null)');
       });
@@ -1120,7 +1122,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain('[AllergyIntolerance] AI where (not exists AI.category)');
       });
@@ -1139,7 +1141,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain('[AllergyIntolerance] AI where (Count(AI.category) > 3)');
       });
@@ -1161,7 +1163,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.someBooleanProperty is false or AI.someBooleanProperty is true)'
@@ -1183,7 +1185,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `valueset "My Value Set VS": 'https://cts.nlm.nih.gov/fhir/ValueSet/1.2.3.4.5.6.7.8.9'`
@@ -1206,7 +1208,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `valueset "My \\"Value\\" Set VS": 'https://cts.nlm.nih.gov/fhir/ValueSet/1.2.3.4.5.6.7.8.9'`
@@ -1237,7 +1239,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `valueset "My Value Set VS": 'https://cts.nlm.nih.gov/fhir/ValueSet/1.2.3.4.5.6.7.8.9'`
@@ -1265,7 +1267,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `valueset "My Value Set VS": 'https://cts.nlm.nih.gov/fhir/ValueSet/1.2.3.4.5.6.7.8.9'`
@@ -1290,7 +1292,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -1314,7 +1316,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -1346,7 +1348,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`codesystem "Some-Other-System": 'http://some-other-system.org'`);
@@ -1384,7 +1386,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`codesystem "Some-Other-System": 'http://some-other-system.org'`);
@@ -1414,7 +1416,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -1448,7 +1450,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`codesystem "Some-Other-System": 'http://some-other-system.org'`);
@@ -1478,7 +1480,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -1512,7 +1514,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`codesystem "Some-Other-System": 'http://some-other-system.org'`);
@@ -1544,7 +1546,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -1578,7 +1580,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`codesystem "Some-Other-System": 'http://some-other-system.org'`);
@@ -1610,7 +1612,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -1644,7 +1646,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`codesystem "Some-Other-System": 'http://some-other-system.org'`);
@@ -1676,7 +1678,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -1700,7 +1702,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`valueset "Value Set VS": 'https://cts.nlm.nih.gov/fhir/ValueSet/2.16'`);
         expect(converted).to.contain(
@@ -1723,7 +1725,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`valueset "Value Set VS": 'https://cts.nlm.nih.gov/fhir/ValueSet/2.16'`);
         expect(converted).to.contain('[Observation] Ob where (exists (Ob.category CODE where CODE in "Value Set VS"))');
@@ -1744,7 +1746,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`valueset "Value Set VS": 'https://cts.nlm.nih.gov/fhir/ValueSet/2.16'`);
         expect(converted).to.contain(
@@ -1764,7 +1766,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[Observation] Ob where (Ob.status = 'final')");
       });
@@ -1781,7 +1783,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[Observation] Ob where (Ob.status in {'amended', 'final'})");
       });
@@ -1798,7 +1800,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `codesystem "AllergyIntolerance Clinical Status": 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical'`
@@ -1821,7 +1823,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `codesystem "AllergyIntolerance Clinical Status": 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical'`
@@ -1849,7 +1851,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           "[AllergyIntolerance] AI where (exists (AI.category CODE where CODE = 'biologic'))"
@@ -1868,7 +1870,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           "[AllergyIntolerance] AI where (exists (AI.category CODE where CODE in {'biologic', 'food'}))"
@@ -1887,7 +1889,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `codesystem "Observation Category": 'http://terminology.hl7.org/CodeSystem/observation-category'`
@@ -1912,7 +1914,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `codesystem "Observation Category": 'http://terminology.hl7.org/CodeSystem/observation-category'`
@@ -1941,7 +1943,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.recordedDate in Interval[Today() - 7 years, Today()])'
@@ -1961,7 +1963,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.recordedDate more than 9 months before Today())'
@@ -1981,7 +1983,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.recordedDate in Interval[Now() - 7 years, Now()])'
@@ -2002,7 +2004,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.onset as FHIR.Period starts during Interval[Now() - 6 months, Now()])'
@@ -2022,7 +2024,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain('[AllergyIntolerance] AI where (AI.recordedDate more than 9 months before Now())');
       });
@@ -2044,7 +2046,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.recordedDate on or after @2021-08-24T07:05:19)'
@@ -2069,7 +2071,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.recordedDate starts on or after @2021-08-24T07:05:19)'
@@ -2097,7 +2099,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.recordedDate in Interval[@2021-08-25T07:04:40, @2021-08-25T07:04:40])'
@@ -2125,7 +2127,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (ToDate((AI.recordedDate).value) in Interval[@2021-08-25, @2021-08-25])'
@@ -2153,7 +2155,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[Observation] Ob where (Ob.issued in Interval[@2021-08-25T07:04:40, @2021-08-25T07:04:40])'
@@ -2181,7 +2183,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[Observation] Ob where (ToDate((Ob.issued).value) in Interval[@2021-08-25, @2021-08-25])'
@@ -2204,7 +2206,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain('[AllergyIntolerance] AI where (AI.recordedDate contains @2021-08-24T07:05:19)');
       });
@@ -2225,7 +2227,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (not (AI.recordedDate contains @2021-08-24T07:05:19))'
@@ -2250,7 +2252,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           `[AllergyIntolerance] AI where (AI.recordedDate overlaps Interval[@2021-08-25T05:58:40,@2021-08-26T07:58:40])`
@@ -2274,7 +2276,7 @@ describe('cqlHandler', () => {
           ]
         };
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(`codesystem "Some-System": 'http://some-system.org'`);
         expect(converted).to.contain(`code "Some Display code": 'Some-Code' from "Some-System" display 'Some Display'`);
@@ -2295,7 +2297,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[Observation] Ob where (Ob.value as FHIR.Quantity > 3 'A')");
       });
@@ -2314,7 +2316,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[Observation] Ob where (Ob.value as FHIR.Quantity between 1 'a' and 3 'a')");
       });
@@ -2334,7 +2336,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[Observation] Ob where ((Ob.value as FHIR.Range).low > 3 'A')");
       });
@@ -2352,7 +2354,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[1].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[Observation] Ob where (Ob.value as FHIR.Range overlaps Interval[1 'A',3 'A'])");
       });
@@ -2370,7 +2372,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[AllergyIntolerance] AI where (AI.onset as FHIR.Range contains 3 'A')");
       });
@@ -2388,7 +2390,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain("[AllergyIntolerance] AI where (not (AI.onset as FHIR.Range contains 3 'A'))");
       });
@@ -2408,7 +2410,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain('[AllergyIntolerance] AI where (AI.onset as FHIR.Age > 3 years)');
       });
@@ -2429,7 +2431,7 @@ describe('cqlHandler', () => {
         };
 
         rawBaseQuery.expTreeInclude.childInstances[0].modifiers[0].where = templateTest;
-        const artifact = buildCQL(rawBaseQuery);
+        const artifact = cqlHandler.buildCQL(rawBaseQuery);
         const converted = artifact.toString();
         expect(converted).to.contain(
           '[AllergyIntolerance] AI where (AI.onset as FHIR.Age between 1 years and 3 years)'
@@ -2514,7 +2516,7 @@ describe('cqlHandler', () => {
       });
 
       it('should export no suggestions when none included', () => {
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
 
         const expectedSuggestion = `
@@ -2574,7 +2576,7 @@ define "Suggestions":\r
             suggestions: []
           }
         ];
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
 
         // Note: actions list is included and empty when no actions are present
@@ -2627,7 +2629,7 @@ define "Suggestions":\r
             ]
           }
         ];
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
 
         const expectedSuggestion = `
@@ -2686,7 +2688,7 @@ MedicationRequest {\r
             ]
           }
         ];
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
 
         const expectedSuggestion = `
@@ -2750,7 +2752,7 @@ MedicationRequest {\r
             ]
           }
         ];
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
 
         const expectedSuggestion = `
@@ -2812,7 +2814,7 @@ ServiceRequest {\r
             ]
           }
         ];
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
 
         const expectedSuggestion = `
@@ -2907,7 +2909,7 @@ ServiceRequest {\r
             ]
           }
         ];
-        const artifact = buildCQL(raw);
+        const artifact = cqlHandler.buildCQL(raw);
         const converted = artifact.toString();
 
         const expectedSuggestion = `
@@ -2967,14 +2969,14 @@ ServiceRequest {\r
       inputFiles = [
         {
           filename: 'Simple.cql',
-          text: fs.readFileSync(path.join(__dirname, 'fixtures', 'cqlHandler', 'Simple.cql'), 'utf-8'),
+          text: fs.readFileSync(path.join(mydirname, 'fixtures', 'cqlHandler', 'Simple.cql'), 'utf-8'),
           type: 'application/cql'
         }
       ];
-      inputFileStreams = [fs.createReadStream(path.join(__dirname, 'fixtures', 'cqlHandler', 'FHIRHelpers.cql'))];
+      inputFileStreams = [fs.createReadStream(path.join(mydirname, 'fixtures', 'cqlHandler', 'FHIRHelpers.cql'))];
       // Output is a multi-part message w/ JSON and XML
       outputContent = fs
-        .readFileSync(path.join(__dirname, 'fixtures', 'cqlHandler', 'Simple-Response.txt'), 'utf-8')
+        .readFileSync(path.join(mydirname, 'fixtures', 'cqlHandler', 'Simple-Response.txt'), 'utf-8')
         .replace(/[\n]/g, '\r\n');
       outputHeaders = {
         'MIME-Version': '1.0',
@@ -3006,7 +3008,7 @@ ServiceRequest {\r
         .reply(200, outputContent, outputHeaders);
 
       // Make the request!
-      makeCQLtoELMRequest(inputFiles, inputFileStreams, true, err => {
+      cqlHandler.makeCQLtoELMRequest(inputFiles, inputFileStreams, true, err => {
         try {
           expect(err).to.be.null;
           done();
@@ -3025,7 +3027,7 @@ ServiceRequest {\r
         .reply(200, outputContent, outputHeaders);
 
       // Make the request!
-      makeCQLtoELMRequest(inputFiles, inputFileStreams, true, err => {
+      cqlHandler.makeCQLtoELMRequest(inputFiles, inputFileStreams, true, err => {
         try {
           expect(err).to.be.null;
           done();
@@ -3044,7 +3046,7 @@ ServiceRequest {\r
         .reply(200, outputContent, outputHeaders);
 
       // Make the request!
-      makeCQLtoELMRequest(inputFiles, inputFileStreams, false, err => {
+      cqlHandler.makeCQLtoELMRequest(inputFiles, inputFileStreams, false, err => {
         try {
           expect(err).to.be.null;
           done();
@@ -3061,7 +3063,7 @@ ServiceRequest {\r
         .reply(200, outputContent, outputHeaders);
 
       // Make the request!
-      makeCQLtoELMRequest(inputFiles, inputFileStreams, true, (err, elmFiles) => {
+      cqlHandler.makeCQLtoELMRequest(inputFiles, inputFileStreams, true, (err, elmFiles) => {
         try {
           expect(err).to.be.null;
           expect(elmFiles).to.have.length(4);
@@ -3107,12 +3109,12 @@ ServiceRequest {\r
 
     it('should send a valid request to the CQL Formatter Service', done => {
       const inputContent = fs.readFileSync(
-        path.join(__dirname, 'fixtures', 'cqlHandler', 'UnformattedCQL.cql'),
+        path.join(mydirname, 'fixtures', 'cqlHandler', 'UnformattedCQL.cql'),
         'utf-8'
       );
       const inputHeaders = { 'Content-Type': 'application/cql', Accept: 'application/cql' };
       const outputContent = fs.readFileSync(
-        path.join(__dirname, 'fixtures', 'cqlHandler', 'FormattedCQL.cql'),
+        path.join(mydirname, 'fixtures', 'cqlHandler', 'FormattedCQL.cql'),
         'utf-8'
       );
       const outputHeaders = { 'Content-Type': 'application/cql' };
@@ -3123,7 +3125,7 @@ ServiceRequest {\r
         .reply(200, outputContent, outputHeaders);
 
       // Make the request!
-      formatCQL(inputContent, (err, output) => {
+      cqlHandler.formatCQL(inputContent, (err, output) => {
         try {
           expect(err).to.be.null;
           expect(output).to.equal(outputContent);
@@ -3146,7 +3148,7 @@ ServiceRequest {\r
         .reply(400, outputContent, outputHeaders);
 
       // Make the request!
-      formatCQL(inputContent, (err, output) => {
+      cqlHandler.formatCQL(inputContent, (err, output) => {
         try {
           expect(err).to.be.instanceOf(Error);
           expect(err.message).to.equal(outputContent);

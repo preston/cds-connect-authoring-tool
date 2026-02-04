@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Checkbox, IconButton, TableRow, TableCell } from '@mui/material';
 import { Delete as DeleteIcon, Download as DownloadIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import FileSaver from 'file-saver';
@@ -32,8 +32,9 @@ const PatientsTableRow = ({ isDisabled, isSelected, patient, togglePatient }) =>
   const [showConfirmDeleteModal, setConfirmDeleteModal] = useState(false);
   const [showPatientDetailsModal, setShowPatientDetailsModal] = useState(false);
   const queryClient = useQueryClient();
-  const { mutateAsync: asyncDeletePatient } = useMutation(deletePatient, {
-    onSuccess: () => queryClient.invalidateQueries('patients')
+  const { mutateAsync: asyncDeletePatient } = useMutation({
+    mutationFn: deletePatient,
+    onSuccess: () => queryClient.invalidateQueries(['patients'])
   });
   const tableStyles = useTableStyles();
   const patientName = getPatientFullName(patient);
@@ -98,7 +99,13 @@ const PatientsTableRow = ({ isDisabled, isSelected, patient, togglePatient }) =>
           <DeleteConfirmationModal
             deleteType="patient"
             handleCloseModal={() => setConfirmDeleteModal(false)}
-            handleDelete={() => asyncDeletePatient({ patient })}
+            handleDelete={async () => {
+              try {
+                await asyncDeletePatient({ patient });
+              } catch (error) {
+                console.error('Delete patient failed:', error);
+              }
+            }}
           >
             <PatientCard patient={patient} />
           </DeleteConfirmationModal>

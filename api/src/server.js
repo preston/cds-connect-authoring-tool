@@ -1,15 +1,15 @@
 // Import Dependencies
-const fs = require('fs');
-const process = require('process');
-const express = require('express');
-const helmet = require('helmet');
-const https = require('https');
-const morgan = require('morgan');
-const mongoose = require('mongoose');
-const migrate = require('./migrations/migrate-mongo');
-const config = require('./config');
-const configPassport = require('./auth/configPassport');
-const routes = require('./routes');
+import fs from 'fs';
+import process from 'process';
+import express from 'express';
+import helmet from 'helmet';
+import https from 'https';
+import morgan from 'morgan';
+import mongoose from 'mongoose';
+import migrate from './migrations/migrate-mongo.js';
+import config from './config.js';
+import configPassport from './auth/configPassport.js';
+import routes from './routes.js';
 
 // This uses the same evironment variables as documented for Create React App:
 // https://create-react-app.dev/docs/using-https-in-development/
@@ -67,7 +67,7 @@ app.use((req, res, next) => {
 routes(app);
 
 // Starts Server
-if (!module.parent) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const startServer = () => {
     if (useHTTPS) {
       https

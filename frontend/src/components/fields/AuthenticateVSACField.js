@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLatest } from 'react-use';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Alert, Button, CircularProgress, TextField } from '@mui/material';
 import { Check as CheckIcon, Lock as LockIcon } from '@mui/icons-material';
 
@@ -15,15 +15,21 @@ const AuthenticateVSACField = () => {
   const apiKeyRef = useLatest(apiKey);
   const dispatch = useDispatch();
   const reduxApiKey = useSelector(state => state.vsac.apiKey);
-  const { mutateAsync, isLoading, isError, isSuccess, reset } = useMutation(authenticateVSAC);
+  const { mutateAsync, isLoading, isError, isSuccess, reset } = useMutation({
+    mutationFn: authenticateVSAC
+  });
   const styles = useStyles();
 
-  const onLogin = useCallback(() => {
+  const onLogin = useCallback(async () => {
     const apiKey = apiKeyRef.current;
 
-    mutateAsync({ apiKey }).then(() => {
-      dispatch(setVSACApiKey(apiKey));
-    });
+    try {
+      await mutateAsync({ apiKey }).then(() => {
+        dispatch(setVSACApiKey(apiKey));
+      });
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
   }, [apiKeyRef, mutateAsync, dispatch]);
 
   if (reduxApiKey) return null;

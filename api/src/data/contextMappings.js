@@ -1,4 +1,4 @@
-module.exports = [
+export default [
   {
     type: 'gender',
     system: 'http://hl7.org/fhir/administrative-gender',

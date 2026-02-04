@@ -1,6 +1,8 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const { setupExpressApp, importChaiExpect } = require('../utils');
+import request from 'supertest';
+import sinon from 'sinon';
+import { setupExpressApp, importChaiExpect } from '../utils.js';
+
+const sandbox = sinon.createSandbox();
 
 // NOTE: Most of the data exposed by /query is NOT user-dependent; therefore
 // authentication is not required. In normal use, however, the use will be

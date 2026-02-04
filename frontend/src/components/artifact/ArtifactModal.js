@@ -61,7 +61,7 @@ const ArtifactModal = ({ artifactEditing, handleAddArtifact, handleCloseModal, h
       maxWidth="xl"
       submitButtonText={artifactEditing ? 'Save' : 'Create'}
       submitDisabled={submitDisabled}
-      title={artifactEditing ? 'Edit Artifact Details' : 'Create New Artifact'}
+      title={artifactEditing ? 'Edit Library Details' : 'Create New Library'}
     >
       <Formik
         innerRef={formRef}

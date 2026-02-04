@@ -2,11 +2,10 @@
  * Migrates patients that don't have version field, applying the following changes:
  * - adds 'fhirVersion' of 'DSTU2' to 'patients'
  */
-'use strict';
 
-module.exports.id = 'patient-to-patientwithversion';
+export const id = 'patient-to-patientwithversion';
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: patient-to-patientwithversion');
   var coll = this.db.collection('patients');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -50,7 +49,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

@@ -1,8 +1,8 @@
-const request = require('supertest');
-const passport = require('passport');
-const sandbox = require('sinon').createSandbox();
-const { assert, fake, replace } = sandbox;
-const { setupExpressApp, importChaiExpect } = require('../utils');
+import request from 'supertest';
+import passport from 'passport';
+import sinon from 'sinon';
+
+import { setupExpressApp, importChaiExpect } from '../utils.js';
 
 describe('Route: /authoring/api/auth/login', () => {
   let app, options, fakeLogout, expect;
@@ -12,7 +12,7 @@ describe('Route: /authoring/api/auth/login', () => {
   });
 
   beforeEach(() => {
-    fakeLogout = fake.yields();
+    fakeLogout = sinon.fake.yields();
     [app, options] = setupExpressApp(app => {
       app.use(async (req, res, next) => {
         req.logout = fakeLogout;
@@ -23,7 +23,7 @@ describe('Route: /authoring/api/auth/login', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -33,8 +33,8 @@ describe('Route: /authoring/api/auth/login', () => {
         req.user = { uid: 'bob' };
         cb();
       };
-      const mockAuthenticate = fake.returns(mockAuthInvoker);
-      replace(passport, 'authenticate', mockAuthenticate);
+      const mockAuthenticate = sinon.fake.returns(mockAuthInvoker);
+      sinon.replace(passport, 'authenticate', mockAuthenticate);
       request(app)
         .post('/authoring/api/auth/login')
         .send({ username: 'bob', password: 'lemoncurd' })
@@ -53,8 +53,8 @@ describe('Route: /authoring/api/auth/login', () => {
         req.user = { uid: 'bob' };
         cb();
       };
-      const mockAuthenticate = fake.returns(mockAuthInvoker);
-      replace(passport, 'authenticate', mockAuthenticate);
+      const mockAuthenticate = sinon.fake.returns(mockAuthInvoker);
+      sinon.replace(passport, 'authenticate', mockAuthenticate);
       options.user = 'leroy';
       request(app)
         .post('/authoring/api/auth/login')
@@ -64,7 +64,7 @@ describe('Route: /authoring/api/auth/login', () => {
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
-          assert.calledOnce(fakeLogout);
+          sinon.assert.calledOnce(fakeLogout);
           expect(res.body).to.include({ uid: 'bob' });
         })
         .end(done);
@@ -74,8 +74,8 @@ describe('Route: /authoring/api/auth/login', () => {
       const mockAuthInvoker = (req, res, cb) => {
         cb('wrong!');
       };
-      const mockAuthenticate = fake.returns(mockAuthInvoker);
-      replace(passport, 'authenticate', mockAuthenticate);
+      const mockAuthenticate = sinon.fake.returns(mockAuthInvoker);
+      sinon.replace(passport, 'authenticate', mockAuthenticate);
       request(app)
         .post('/authoring/api/auth/login')
         .send({ username: 'bob', password: 'limecurd' })
@@ -89,8 +89,8 @@ describe('Route: /authoring/api/auth/login', () => {
       const mockAuthInvoker = (req, res, cb) => {
         cb('wrong!');
       };
-      const mockAuthenticate = fake.returns(mockAuthInvoker);
-      replace(passport, 'authenticate', mockAuthenticate);
+      const mockAuthenticate = sinon.fake.returns(mockAuthInvoker);
+      sinon.replace(passport, 'authenticate', mockAuthenticate);
       options.user = 'leroy';
       request(app)
         .post('/authoring/api/auth/login')
@@ -100,7 +100,7 @@ describe('Route: /authoring/api/auth/login', () => {
         .expect('WWW-Authenticate', 'FormBased')
         .expect(401)
         .expect(res => {
-          assert.calledOnce(fakeLogout);
+          sinon.assert.calledOnce(fakeLogout);
         })
         .end(done);
     });
@@ -111,7 +111,7 @@ describe('Route: /authoring/api/auth/logout', () => {
   let app, options, fakeLogout;
 
   beforeEach(() => {
-    fakeLogout = fake.yields();
+    fakeLogout = sinon.fake.yields();
     [app, options] = setupExpressApp(app => {
       app.use(async (req, res, next) => {
         req.logout = fakeLogout;
@@ -121,7 +121,7 @@ describe('Route: /authoring/api/auth/logout', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 
@@ -131,7 +131,7 @@ describe('Route: /authoring/api/auth/logout', () => {
         .get('/authoring/api/auth/logout')
         .expect(200)
         .expect(() => {
-          assert.calledOnce(fakeLogout);
+          sinon.assert.calledOnce(fakeLogout);
         })
         .end(done);
     });
@@ -147,7 +147,7 @@ describe('Route: /authoring/api/auth/user', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
     options.reset();
   });
 

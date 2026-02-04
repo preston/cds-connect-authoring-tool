@@ -1,5 +1,7 @@
 # CDS Connect Authoring Tool :: Community Edition 
 
+[![Build Status](https://ci.hl7.org/api/badges/HL7-Quality/cds-connect-authoring-tool/status.svg)](https://ci.hl7.org/HL7-Quality/cds-connect-authoring-tool)
+
 The Clinical Decision Support (CDS) Authoring Tool is a web-based application aimed at simplifying the creation of production-ready clinical quality language (CQL) code. The project is based on "concept templates" (e.g. gender, HDL Cholesterol, etc.), which allow for additional clinical concepts to be included in the future. Concept modifiers are included to allow for more flexible definitions (e.g. most recent, value comparisons, etc.).
 
 This self-hosted Community Edition was originally part of the [CDS Connect](https://cds.ahrq.gov/cdsconnect) project by the [Agency for Healthcare Research and Quality](https://www.ahrq.gov/) (AHRQ) and initially developed under contract by MITRE's [Health FFRDC](https://www.mitre.org/our-impact/rd-centers/health-ffrdc).
@@ -104,7 +106,7 @@ This project can also be built into a Docker image and deployed as a Docker cont
 To build the Docker image, execute the following command from the project's root directory (the directory containing _api_ and _frontend_):
 
 ```
-docker build -t cdsauthoringtool .
+docker build -t hlseven/cds-connect-authoring-tool:latest .
 ```
 
 ### Running Everything with Docker Compose

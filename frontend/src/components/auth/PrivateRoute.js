@@ -1,23 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { Route } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 
 import { ErrorPage } from 'components/base';
 
-const PrivateRoute = ({ component, path }) => {
+const PrivateRoute = ({ component: Component }) => {
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
   const isAuthenticating = useSelector(state => state.auth.isAuthenticating);
 
-  if (isAuthenticated) return <Route path={path} component={component} />;
+  if (isAuthenticating) {
+    return <CircularProgress />;
+  }
 
-  return <Route path={path}>{isAuthenticating ? <CircularProgress /> : <ErrorPage errorType="notLoggedIn" />}</Route>;
+  if (!isAuthenticated) {
+    return <ErrorPage errorType="notLoggedIn" />;
+  }
+
+  return <Component />;
 };
 
 PrivateRoute.propTypes = {
-  component: PropTypes.elementType,
-  path: PropTypes.string.isRequired
+  component: PropTypes.elementType.isRequired
 };
 
 export default PrivateRoute;

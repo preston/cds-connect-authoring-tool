@@ -13,9 +13,8 @@
  *  args: ['min_age', 'max_age']
  * }
  */
-'use strict';
 
-module.exports.id = 'agerange-to-agerangewithunit';
+export const id = 'agerange-to-agerangewithunit';
 
 function parseTree(element) {
   let children = element.childInstances ? element.childInstances : [];
@@ -56,7 +55,7 @@ function parseElement(element) {
   return element;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: agerange-to-agerangewithunit');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -115,7 +114,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

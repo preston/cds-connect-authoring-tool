@@ -2,11 +2,10 @@
  * Migrates artifacts without a fhirVersion set to have a default value:
  * - adds { fhirVersion: '' } to all artifacts
  */
-'use strict';
 
-module.exports.id = 'artifact-with-externalFhirVersion';
+export const id = 'artifact-with-externalFhirVersion';
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: artifact-with-externalFhirVersion');
   let coll = this.db.collection('artifacts');
   let cql = this.db.collection('cqllibraries');
@@ -68,7 +67,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

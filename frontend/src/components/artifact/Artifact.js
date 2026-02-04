@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, CircularProgress } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import clsx from 'clsx';
@@ -19,21 +19,66 @@ const Artifact = () => {
   const textStyles = useTextStyles();
   const queryClient = useQueryClient();
   const styles = useStyles();
-  const { data, error, isLoading, isSuccess } = useQuery('artifacts', () => fetchArtifacts());
+  const { data, error, isLoading, isSuccess } = useQuery({
+    queryKey: ['artifacts'],
+    queryFn: () => fetchArtifacts()
+  });
   const artifacts = data ?? [];
-  const resetArtifacts = () => queryClient.invalidateQueries('artifacts');
-  const { mutateAsync: asyncDeleteArtifact } = useMutation(deleteArtifact, { onSuccess: resetArtifacts });
-  const { mutateAsync: asyncAddArtifact } = useMutation(addArtifact, { onSuccess: resetArtifacts });
-  const { mutateAsync: asyncDuplicateArtifact } = useMutation(duplicateArtifact, { onSuccess: resetArtifacts });
-  const { mutateAsync: asyncUpdateArtifact } = useMutation(updateArtifact, { onSuccess: resetArtifacts });
+  const resetArtifacts = () => queryClient.invalidateQueries(['artifacts']);
+  const { mutateAsync: asyncDeleteArtifact } = useMutation({
+    mutationFn: deleteArtifact,
+    onSuccess: resetArtifacts
+  });
+  const { mutateAsync: asyncAddArtifact } = useMutation({
+    mutationFn: addArtifact,
+    onSuccess: resetArtifacts
+  });
+  const { mutateAsync: asyncDuplicateArtifact } = useMutation({
+    mutationFn: duplicateArtifact,
+    onSuccess: resetArtifacts
+  });
+  const { mutateAsync: asyncUpdateArtifact } = useMutation({
+    mutationFn: updateArtifact,
+    onSuccess: resetArtifacts
+  });
   const handleDuplicateArtifact = useCallback(
-    artifactProps => asyncDuplicateArtifact({ artifactProps }),
+    async artifactProps => {
+      try {
+        await asyncDuplicateArtifact({ artifactProps });
+      } catch (error) {
+        console.error('Duplicate artifact failed:', error);
+      }
+    },
     [asyncDuplicateArtifact]
   );
-  const handleDeleteArtifact = useCallback(artifact => asyncDeleteArtifact({ artifact }), [asyncDeleteArtifact]);
-  const handleAddArtifact = useCallback(artifactProps => asyncAddArtifact({ artifactProps }), [asyncAddArtifact]);
+  const handleDeleteArtifact = useCallback(
+    async artifact => {
+      try {
+        await asyncDeleteArtifact({ artifact });
+      } catch (error) {
+        console.error('Delete artifact failed:', error);
+      }
+    },
+    [asyncDeleteArtifact]
+  );
+  const handleAddArtifact = useCallback(
+    async artifactProps => {
+      try {
+        await asyncAddArtifact({ artifactProps });
+      } catch (error) {
+        console.error('Add artifact failed:', error);
+      }
+    },
+    [asyncAddArtifact]
+  );
   const handleUpdateArtifact = useCallback(
-    (artifact, artifactProps) => asyncUpdateArtifact({ artifact, artifactProps }),
+    async (artifact, artifactProps) => {
+      try {
+        await asyncUpdateArtifact({ artifact, artifactProps });
+      } catch (error) {
+        console.error('Update artifact failed:', error);
+      }
+    },
     [asyncUpdateArtifact]
   );
 
@@ -55,7 +100,7 @@ const Artifact = () => {
           {/* )} */}
           <div className={styles.helpLink}>
             <Button color="primary" onClick={() => setShowModal(true)} startIcon={<AddIcon />} variant="contained">
-              Create New Artifact
+              Create New Library
             </Button>
             <HelpLink linkPath="documentation/userguide#Creating_and_Managing_Artifacts" showText />
           </div>

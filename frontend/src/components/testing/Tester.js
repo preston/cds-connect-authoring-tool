@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Alert, CircularProgress } from '@mui/material';
 
 import PatientDropZone from './PatientDropZone';
@@ -19,9 +19,16 @@ const Tester = () => {
   const [executionError, setExecutionError] = useState(null);
   const [testResults, setTestResults] = useState(null);
   const codeService = useMemo(() => new CodeService(), []);
-  const { data: patients, isLoading: patientsIsLoading } = useQuery('patients', () => fetchPatients());
-  const { mutateAsync: asyncValidateArtifact, isLoading: isValidating } = useMutation(validateArtifact);
-  const { mutateAsync: asyncExecuteArtifact, isLoading: isExecuting } = useMutation(executeArtifact);
+  const { data: patients, isLoading: patientsIsLoading } = useQuery({
+    queryKey: ['patients'],
+    queryFn: () => fetchPatients()
+  });
+  const { mutateAsync: asyncValidateArtifact, isLoading: isValidating } = useMutation({
+    mutationFn: validateArtifact
+  });
+  const { mutateAsync: asyncExecuteArtifact, isLoading: isExecuting } = useMutation({
+    mutationFn: executeArtifact
+  });
   const vsacApiKey = useSelector(state => state.vsac.apiKey);
   const spacingStyles = useSpacingStyles();
   const styles = useStyles();

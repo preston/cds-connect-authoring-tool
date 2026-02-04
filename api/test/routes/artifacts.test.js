@@ -1,10 +1,13 @@
-const request = require('supertest');
-const sandbox = require('sinon').createSandbox();
-const mongoose = require('mongoose');
-const { fake, mock, replace } = sandbox;
-const { setupExpressApp, importChaiExpect } = require('../utils');
-const Artifact = require('../../src/models/artifact');
-const CQLLibrary = require('../../src/models/cqlLibrary');
+import request from 'supertest';
+import sinon from 'sinon';
+import mongoose from 'mongoose';
+
+const sandbox = sinon.createSandbox();
+const { replace, mock, fake } = sandbox;
+
+import { setupExpressApp, importChaiExpect } from '../utils.js';
+import Artifact from '../../src/models/artifact.js';
+import CQLLibrary from '../../src/models/cqlLibrary.js';
 
 describe('Route: /authoring/api/artifacts/', () => {
   let app, options, expect;

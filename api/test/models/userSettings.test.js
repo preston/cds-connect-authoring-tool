@@ -1,5 +1,5 @@
-const UserSettings = require('../../src/models/userSettings');
-const { importChaiExpect } = require('../utils');
+import UserSettings from '../../src/models/userSettings.js';
+import { importChaiExpect } from '../utils.js';
 
 describe('UserSettings', () => {
   let expect;

@@ -1,5 +1,5 @@
-const express = require('express');
-const config = require('../handlers/configHandler');
+import express from 'express';
+import config from '../handlers/configHandler.js';
 
 const ConfigRouter = express.Router();
 
@@ -28,4 +28,4 @@ ConfigRouter.route('/query/resources/r4').get(config.getR4Resources);
 // Route: /authoring/api/config/query/resources/operators
 ConfigRouter.route('/query/resources/operators').get(config.getResourceOperators);
 
-module.exports = ConfigRouter;
+export default ConfigRouter;

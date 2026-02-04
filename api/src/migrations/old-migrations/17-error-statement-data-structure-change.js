@@ -3,9 +3,9 @@
 // NOTE: This dependency was removed from the api module in Jun 2024.
 // If this migration needs to be run, first run `npm install uuid`
 // to add the dependency back, and then uncomment the line below.
-// const { v4: uuid } = require('uuid');
+// import { v4 as uuid } from 'uuid';
 
-module.exports.id = 'error-statement-data-structure-change';
+export const id = 'error-statement-data-structure-change';
 
 const convertNestedStatement = ({ condition, child, thenClause }) => ({
   ifCondition: condition,
@@ -37,9 +37,9 @@ const convertArtifactErrorStatement = ({ errorStatement }) => ({
   elseClause: errorStatement.elseClause || ''
 });
 
-module.exports.convertArtifactErrorStatement = convertArtifactErrorStatement;
+export { convertArtifactErrorStatement };
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: error-statement-data-structure-change');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -85,7 +85,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

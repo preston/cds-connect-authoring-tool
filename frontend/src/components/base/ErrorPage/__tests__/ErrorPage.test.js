@@ -1,15 +1,10 @@
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
+
 import ErrorPage from '../ErrorPage';
 import { render, screen } from 'utils/test-utils';
 
 describe('<ErrorPage />', () => {
-  const renderComponent = ({ pathname = '/', ...props } = {}) =>
-    render(
-      <MemoryRouter initialEntries={[pathname]}>
-        <ErrorPage {...props} />
-      </MemoryRouter>
-    );
+  const renderComponent = ({ pathname = '/', ...props } = {}) => render(<ErrorPage {...props} />, { pathname });
 
   it('renders a generic message when errorType is not provided', () => {
     renderComponent();

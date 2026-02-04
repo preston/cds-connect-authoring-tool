@@ -36,7 +36,7 @@ function updateElement(element, down = false) {
   return updated;
 }
 
-module.exports = {
+export default {
   async up(db, client) {
     console.log(
       'This migration adds the validator to LookBack modifiers on MedicationRequests and MedicationStatements ' +

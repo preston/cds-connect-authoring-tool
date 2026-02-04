@@ -1,8 +1,8 @@
-const modifiers = require('../data/modifiers');
-const CQLLibrary = require('../models/cqlLibrary');
-const { sendUnauthorized } = require('./common');
+import modifiers from '../data/modifiers.js';
+import CQLLibrary from '../models/cqlLibrary.js';
+import { sendUnauthorized } from './common.js';
 
-module.exports = {
+export default {
   allGet
 };
 

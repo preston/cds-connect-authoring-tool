@@ -1,4 +1,4 @@
-const { getRawFromContext } = require('../utils/getRawFromContext');
+import { getRawFromContext } from '../utils/getRawFromContext.js';
 
 class CQLLibrary {
   constructor(context, raw) {
@@ -11,13 +11,17 @@ class CQLLibrary {
     this.rawCodes = new Map();
     this.rawConcepts = new Map();
 
-    this.libraryName = context.libraryDefinition()?.identifier()?.start.text.replace(/"/g, '');
+    this.libraryName = context.libraryDefinition()?.qualifiedIdentifier()?.identifier()?.start.text.replace(/"/g, '');
 
-    context.includeDefinition().forEach(i => {
-      const localIdentifier = (i.localIdentifier() || i.identifier()).start.text.replace(/"/g, '');
-      const identifier = i.identifier().start.text.replace(/"/g, '');
-      this.includeNames.set(identifier, localIdentifier);
-    });
+    context.definition()
+      .map(d => d.includeDefinition())
+      .filter(i => i) // Filter out null/undefined results
+      .forEach(i => {
+        const localIdentifier = i.localIdentifier()?.start.text.replace(/"/g, '');
+        // const localIdentifier = i.localIdentifier() || i.localIdentifier()?.start.text.replace(/"/g, '');
+        const identifier = i.qualifiedIdentifier()?.identifier()?.start.text.replace(/"/g, '');
+        this.includeNames.set(identifier, localIdentifier);
+      });
 
     this.statements = context.statement();
     this.statements
@@ -28,23 +32,29 @@ class CQLLibrary {
     this.statements
       .map(s => s.functionDefinition())
       .filter(s => s)
-      .forEach(s => this.rawFunctions.set(s.identifier().start.text, getRawFromContext(s)));
+      .forEach(s => {
+        // In grammar-1.5, function name is in children[2] which is IdentifierOrFunctionIdentifierContext
+        const funcName = s.children[2]?.identifier()?.start?.text?.replace(/"/g, '');
+        if (funcName) {
+          this.rawFunctions.set(funcName, getRawFromContext(s));
+        }
+      });
 
-    context
-      .codesystemDefinition()
+    context.definition()
+      .map(d => d.codesystemDefinition())
       .filter(c => c)
       .forEach(c => this.rawCodesystems.set(c.identifier().start.text, getRawFromContext(c)));
 
-    context
-      .codeDefinition()
+    context.definition()
+      .map(d => d.codeDefinition())
       .filter(c => c)
       .forEach(c => this.rawCodes.set(c.identifier().start.text, getRawFromContext(c)));
 
-    context
-      .conceptDefinition()
+    context.definition()
+      .map(d => d.conceptDefinition())
       .filter(c => c)
       .forEach(c => this.rawConcepts.set(c.identifier().start.text, getRawFromContext(c)));
   }
 }
 
-module.exports = { CQLLibrary };
+export { CQLLibrary };

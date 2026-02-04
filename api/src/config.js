@@ -1,8 +1,8 @@
-const path = require('path');
-const convict = require('convict');
-const validator = require('validator');
-const json5 = require('json5');
-const fs = require('fs');
+import path from 'path';
+import convict from 'convict';
+import validator from 'validator';
+import json5 from 'json5';
+import fs from 'fs';
 
 function laxUrl(...protocols) {
   return val => {
@@ -201,4 +201,4 @@ config.validate({ allowed: 'warn' });
 
 console.log('Loaded config:', config.toString());
 
-module.exports = config;
+export default config;

@@ -1,11 +1,10 @@
 /**
  * Migrates artifacts that have recommendations, adding  'links' array
  */
-'use strict';
 
-module.exports.id = 'recommendations-add-links';
+export const id = 'recommendations-add-links';
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: recommendations-add-links');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -54,7 +53,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

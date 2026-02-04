@@ -1,6 +1,6 @@
 // Generated from cql.g4 by ANTLR 4.8
 // jshint ignore: start
-var antlr4 = require('antlr4/index');
+import antlr4 from 'antlr4/index.js';
 
 // This class defines a complete generic visitor for a parse tree produced by cqlParser.
 
@@ -925,4 +925,4 @@ cqlVisitor.prototype.visitUnit = function(ctx) {
 
 
 
-exports.cqlVisitor = cqlVisitor;
+export { cqlVisitor };

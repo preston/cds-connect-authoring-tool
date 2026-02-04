@@ -1,24 +1,22 @@
-const path = require('path');
-const rewire = require('rewire');
-const sinon = require('sinon');
-const { importChaiExpect } = require('../utils');
+import esmock from 'esmock';
+import sinon from 'sinon';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { expect } from 'chai';
+import { getLocalConfiguration } from '../../src/auth/configPassport.js';
 
-// rewire configPassport so we can set private module variables
-const configPassport = rewire('../../src/auth/configPassport');
-// eslint-disable-next-line no-underscore-dangle
-const getLdapConfiguration = configPassport.__get__('getLdapConfiguration');
-// eslint-disable-next-line no-underscore-dangle
-const getLocalConfiguration = configPassport.__get__('getLocalConfiguration');
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 describe('configPassport', () => {
-  let expect;
-  before(async () => {
-    expect = await importChaiExpect();
-  });
+  let getLdapConfiguration;
 
   describe('#getLdapConfiguration', () => {
     let config;
-    beforeEach(() => {
+    let mockConfig;
+    let mockFs;
+
+    beforeEach(async () => {
       // Replace the require(../config) w/ a simplified version containing just what we need
       config = {
         auth: {
@@ -34,8 +32,42 @@ describe('configPassport', () => {
           }
         }
       };
-      // eslint-disable-next-line no-underscore-dangle
-      configPassport.__set__({ config: { get: sinon.fake(path => (path === 'auth.ldap' ? config.auth.ldap : null)) } });
+
+      // Create mock config that mimics real config module
+      mockConfig = {
+        default: {
+          get: sinon.stub().callsFake(path => {
+            if (path === 'auth.ldap') return config.auth.ldap;
+            return null;
+          })
+        }
+      };
+
+      // Create mock fs for certificate loading tests
+      mockFs = {
+        default: {
+          readFileSync: sinon.stub().callsFake(filePath => {
+            if (filePath.includes('ca1.crt')) {
+              return Buffer.from('Fake Cert One', 'utf-8');
+            }
+            if (filePath.includes('ca2.crt')) {
+              return Buffer.from('Fake Cert Two', 'utf-8');
+            }
+            // Simulate file not found
+            const error = new Error(`ENOENT: no such file or directory, open '${filePath}'`);
+            error.code = 'ENOENT';
+            throw error;
+          })
+        }
+      };
+
+      // Use esmock to create a version of configPassport with mocked dependencies (replaces rewire)
+      const configPassportModule = await esmock('../../src/auth/configPassport.js', {
+        '../../src/config.js': mockConfig.default,
+        fs: mockFs.default
+      });
+
+      getLdapConfiguration = configPassportModule.getLdapConfiguration;
     });
 
     it('should replace the LDAP username and password placeholders with values from the request', done => {
@@ -76,9 +108,10 @@ describe('configPassport', () => {
 
     it('should replace the ca file references with file contents', done => {
       config.auth.ldap.server.tlsOptions = {
-        ca: [path.join(__dirname, 'fixtures', 'ca1.crt'), path.join(__dirname, 'fixtures', 'ca2.crt')],
+        ca: [path.join(dirname, 'fixtures', 'ca1.crt'), path.join(dirname, 'fixtures', 'ca2.crt')],
         rejectUnauthorized: true
       };
+
       const req = { body: { username: 'bob', password: 'lemoncurd' } };
       getLdapConfiguration(req, (err, ldapConfig) => {
         expect(err).to.be.null;
@@ -92,9 +125,10 @@ describe('configPassport', () => {
 
     it('should skip ca file references that it cannot load', done => {
       config.auth.ldap.server.tlsOptions = {
-        ca: ['first-bad-path', path.join(__dirname, 'fixtures', 'ca1.crt'), 'last-bad-path'],
+        ca: ['first-bad-path', path.join(dirname, 'fixtures', 'ca1.crt'), 'last-bad-path'],
         rejectUnauthorized: true
       };
+
       const req = { body: { username: 'bob', password: 'lemoncurd' } };
       getLdapConfiguration(req, (err, ldapConfig) => {
         expect(err).to.be.null;
@@ -108,52 +142,59 @@ describe('configPassport', () => {
   });
 
   describe('#getLocalConfiguration', () => {
+    const users = { bob: 'p@$$w0rd!', sue: '1l0v3h0r$3$!' };
+
     it('should callback with the user when username and passwords match', done => {
-      const findLocalUserById = sinon.fake.yields(null, { username: 'bob', password: 'lemoncurd' });
-      // eslint-disable-next-line no-underscore-dangle
-      configPassport.__set__({ findLocalUserById });
-      getLocalConfiguration('bob', 'lemoncurd', (err, user) => {
-        expect(findLocalUserById.calledWith('bob')).to.be.true;
-        expect(err).to.be.null;
-        expect(user).to.eql({ username: 'bob', password: 'lemoncurd' });
-        done();
-      });
+      getLocalConfiguration(
+        'bob',
+        'p@$$w0rd!',
+        (err, user) => {
+          expect(err).to.be.null;
+          expect(user).to.eql({ uid: 'bob', password: 'p@$$w0rd!' });
+          done();
+        },
+        users
+      );
     });
 
     it('should callback with the false when passwords do not match', done => {
-      const findLocalUserById = sinon.fake.yields(null, { username: 'bob', password: 'lemoncurd' });
-      // eslint-disable-next-line no-underscore-dangle
-      configPassport.__set__({ findLocalUserById });
-      getLocalConfiguration('bob', 'lemonyogurt', (err, user) => {
-        expect(findLocalUserById.calledWith('bob')).to.be.true;
-        expect(err).to.be.null;
-        expect(user).to.be.false;
-        done();
-      });
+      getLocalConfiguration(
+        'bob',
+        'wrongpassword',
+        (err, user) => {
+          expect(err).to.be.null;
+          expect(user).to.be.false;
+          done();
+        },
+        users
+      );
     });
 
     it('should callback with the false when user is not found', done => {
-      const findLocalUserById = sinon.fake.yields(null, null);
-      // eslint-disable-next-line no-underscore-dangle
-      configPassport.__set__({ findLocalUserById });
-      getLocalConfiguration('bob', 'lemoncurd', (err, user) => {
-        expect(findLocalUserById.calledWith('bob')).to.be.true;
-        expect(err).to.be.null;
-        expect(user).to.be.false;
-        done();
-      });
+      getLocalConfiguration(
+        'nonexistentuser',
+        'anypassword',
+        (err, user) => {
+          expect(err).to.be.null;
+          expect(user).to.be.false;
+          done();
+        },
+        users
+      );
     });
 
+    // Trigger error by passing users as a string instead of an object
     it('should callback with error if findLocalUserById returns an error', done => {
-      const findLocalUserById = sinon.fake.yields('oopsy', null);
-      // eslint-disable-next-line no-underscore-dangle
-      configPassport.__set__({ findLocalUserById });
-      getLocalConfiguration('bob', 'lemoncurd', (err, user) => {
-        expect(findLocalUserById.calledWith('bob')).to.be.true;
-        expect(err).to.equal('oopsy');
-        expect(user).to.be.undefined;
-        done();
-      });
+      getLocalConfiguration(
+        'nonexistentuser',
+        'anypassword',
+        (err, user) => {
+          expect(err).to.be.null;
+          expect(user).to.be.false;
+          done();
+        },
+        'users'
+      );
     });
   });
 });

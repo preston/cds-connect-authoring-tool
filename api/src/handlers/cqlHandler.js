@@ -1,32 +1,48 @@
-const config = require('../config');
-const Artifact = require('../models/artifact');
-const CQLLibrary = require('../models/cqlLibrary');
-const { exportCQL } = require('../cql-merge/export/exportCQL');
-const { importCQL } = require('../cql-merge/import/importCQL');
-const { RawCQL } = require('../cql-merge/utils/RawCQL');
-const { sendUnauthorized } = require('./common');
-const _ = require('lodash');
-const slug = require('slug').default;
-const ejs = require('ejs');
-const fs = require('fs');
-const archiver = require('archiver');
-const path = require('path');
-const axios = require('axios');
-const FormData = require('form-data');
-const busboy = require('busboy');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import _ from 'lodash';
+import slug from 'slug';
+import ejs from 'ejs';
+import archiver from 'archiver';
+import axios from 'axios';
+import FormData from 'form-data';
+import busboy from 'busboy';
+
+import config from '../config.js';
+import Artifact from '../models/artifact.js';
+import CQLLibrary from '../models/cqlLibrary.js';
+import exportCQL from '../cql-merge/export/exportCQL.js';
+import importCQL from '../cql-merge/import/importCQL.js';
+import RawCQL from '../cql-merge/utils/RawCQL.js';
+import { sendUnauthorized } from './common.js';
+
+const currentFilePath = fileURLToPath(import.meta.url);
+const currentDirPath = path.dirname(currentFilePath);
+
+// Import JSON files using fs.readFileSync
+const dstu2_resources = JSON.parse(
+  fs.readFileSync(new URL('../data/query_builder/dstu2_resources.json', import.meta.url))
+);
+const stu3_resources = JSON.parse(
+  fs.readFileSync(new URL('../data/query_builder/stu3_resources.json', import.meta.url))
+);
+const r4_resources = JSON.parse(fs.readFileSync(new URL('../data/query_builder/r4_resources.json', import.meta.url)));
+const operators = JSON.parse(fs.readFileSync(new URL('../data/query_builder/operators.json', import.meta.url)));
 
 const queryResources = {
-  dstu2_resources: require('../data/query_builder/dstu2_resources.json'),
-  stu3_resources: require('../data/query_builder/stu3_resources.json'),
-  r4_resources: require('../data/query_builder/r4_resources.json'),
-  operators: require('../data/query_builder/operators.json')
+  dstu2_resources,
+  stu3_resources,
+  r4_resources,
+  operators
 };
 
-const templatePath = path.join(__dirname, '..', 'data', 'cql', 'templates');
-const specificPath = path.join(__dirname, '..', 'data', 'cql', 'specificTemplates');
-const modifierPath = path.join(__dirname, '..', 'data', 'cql', 'modifiers');
-const rulePath = path.join(__dirname, '..', 'data', 'cql', 'rules');
-const artifactPath = path.join(__dirname, '..', 'data', 'cql', 'artifact.ejs');
+const templatePath = path.join(currentDirPath, '..', 'data', 'cql', 'templates');
+const specificPath = path.join(currentDirPath, '..', 'data', 'cql', 'specificTemplates');
+const modifierPath = path.join(currentDirPath, '..', 'data', 'cql', 'modifiers');
+const rulePath = path.join(currentDirPath, '..', 'data', 'cql', 'rules');
+const artifactPath = path.join(currentDirPath, '..', 'data', 'cql', 'artifact.ejs');
 const specificMap = loadTemplates(specificPath);
 const templateMap = loadTemplates(templatePath);
 const modifierMap = loadTemplates(modifierPath);
@@ -166,15 +182,6 @@ const queryAliasMap = {
 // A flag to hold the FHIR version, so that it can be used
 // in functions external to the artifact.
 let fhirTarget;
-
-module.exports = {
-  objToZippedCql,
-  objToViewableCql,
-  objToELM,
-  makeCQLtoELMRequest,
-  formatCQL,
-  buildCQL
-};
 
 function getFieldWithType(fields, type) {
   return fields.find(f => f.type.endsWith(type));
@@ -1603,7 +1610,7 @@ function objConvert(req, res, callback) {
 
       // Merge the artifact with the commons and conversions libraries
       const fhirVersion = fhirTarget.version || '4.0.1';
-      const helperPath = path.join(__dirname, '..', 'data', 'library_helpers', 'CQLFiles', fhirVersion);
+      const helperPath = path.join(currentDirPath, '..', 'data', 'library_helpers', 'CQLFiles', fhirVersion);
       const commonsPath = path.join(
         helperPath,
         `AT_Internal_CDS_Connect_Commons_for_FHIRv${fhirVersion.replace(/\./g, '')}.cql`
@@ -1620,8 +1627,8 @@ function objConvert(req, res, callback) {
 
       // Attempt to reformat the primary CQL library if CQL Formatter is active
       if (config.get('cqlFormatter.active')) {
-        // NOTE: using module.exports prefix to allow for mocking formatCQL in tests
-        module.exports.formatCQL(artifactJson.text, (err, formattedCQL) => {
+        // NOTE: using formatCQL function directly
+        formatCQL(artifactJson.text, (err, formattedCQL) => {
           // Sanity check: only replace the CQL if no errors and it starts with "library";
           // Otherwise just ignore the error since formatting isn't critical.
           if (err == null && formattedCQL != null && /^library/.test(formattedCQL)) {
@@ -1738,7 +1745,7 @@ function writeZip(artifact, artifactJson, externalLibs, _, writeStream, callback
       });
 
       const helperPath = path.join(
-        __dirname,
+        currentDirPath,
         '..',
         'data',
         'library_helpers',
@@ -1769,10 +1776,17 @@ function convertToElm(artifacts, getXML, callback /* (error, elmFiles) */) {
   }
 
   // Load all the supplementary CQL files, open file streams to them, and convert to ELM
-  const helperPath = path.join(__dirname, '..', 'data', 'library_helpers', 'CQLFiles', fhirTarget.version || '4.0.1');
+  const helperPath = path.join(
+    currentDirPath,
+    '..',
+    'data',
+    'library_helpers',
+    'CQLFiles',
+    fhirTarget.version || '4.0.1'
+  );
   const fileStream = fs.createReadStream(`${helperPath}/FHIRHelpers.cql`);
-  // NOTE: using module.exports prefix to allow for mocking makeCQLtoELMRequest in tests
-  module.exports.makeCQLtoELMRequest(artifacts, [fileStream], getXML, callback);
+  // NOTE: using makeCQLtoELMRequest function directly
+  makeCQLtoELMRequest(artifacts, [fileStream], getXML, callback);
 }
 
 function makeCQLtoELMRequest(files, fileStreams, getXML, callback) {
@@ -1874,3 +1888,13 @@ function formatCQL(cqlText, callback) {
 function buildCQL(artifactBody) {
   return new CqlArtifact(artifactBody);
 }
+
+export default {
+  makeCQLtoELMRequest,
+  buildCQL,
+  objToZippedCql,
+  objToViewableCql,
+  objToELM,
+  objConvert,
+  formatCQL
+};

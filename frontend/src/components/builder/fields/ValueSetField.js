@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 
 import { Dropdown } from 'components/elements';
@@ -10,7 +10,11 @@ import { useFieldStyles } from 'styles/hooks';
 const ValueSetField = ({ field, handleUpdateField }) => {
   const fieldStyles = useFieldStyles();
   const query = { type: field.select };
-  const { data } = useQuery(['valueSets', query], () => fetchValueSets(query), { staleTime: Infinity });
+  const { data } = useQuery({
+    queryKey: ['valueSets', query],
+    queryFn: () => fetchValueSets(query),
+    staleTime: Infinity
+  });
   const valueSets = data ?? [];
 
   return (

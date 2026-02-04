@@ -1,10 +1,11 @@
 {
   "name": "cds_authoring_tool_api",
-  "version": "0.1.0",
-  "homepage": "https://cds.ahrq.gov/authoring",
+  "version": "2.0.0",
+  "type": "module",
+  "homepage": "https://github.com/HL7-Quality/cds-connect-authoring-tool",
   "license": "Apache-2.0",
   "dependencies": {
-    "antlr4": "4.8.0",
+    "antlr4": "4.13.2",
     "archiver": "^7.0.1",
     "axios": "^1.11.0",
     "basic-auth": "^2.0.1",
@@ -20,28 +21,32 @@
     "json5": "^2.2.3",
     "lodash": "^4.17.21",
     "migrate-mongo": "^12.1.3",
-    "mongoose": "^8.17.0",
+    "mongoose": "^8.18.1",
     "morgan": "^1.10.1",
     "passport": "^0.7.0",
     "passport-ldapauth": "^3.0.1",
     "passport-local": "^1.0.0",
-    "slug": "^10.0.0",
+    "slug": "^11.0.0",
     "unzipper": "^0.12.3",
     "validator": "^13.15.15"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "chai": "^5.2.1",
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/register": "^7.28.3",
+    "@eslint/js": "^9.35.0",
+    "babel-plugin-rewire": "^1.2.0",
+    "chai": "^6.0.1",
     "chai-exclude": "^3.0.1",
-    "eslint": "^9.32.0",
-    "globals": "^16.3.0",
-    "mocha": "^11.7.1",
-    "nock": "^14.0.8",
+    "eslint": "^9.35.0",
+    "esmock": "^2.7.2",
+    "globals": "^16.4.0",
+    "mocha": "^11.7.2",
+    "nock": "^14.0.10",
     "nodemon": "^3.1.10",
     "nyc": "^17.1.0",
     "opener": "^1.5.2",
     "prettier": "^3.6.2",
-    "rewire": "^9.0.0",
     "sinon": "^21.0.0",
     "supertest": "^7.1.4"
   },
@@ -54,7 +59,7 @@
     "start": "node src/server.js",
     "test-ci": "mocha --reporter spec --recursive --no-colors",
     "test-cov": "nyc --reporter=html --reporter=text --report-dir=./.nyc_output/coverage mocha --reporter spec --recursive",
-    "test": "mocha --reporter spec --recursive",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules\" mocha --require @babel/register --reporter spec --recursive",
     "open-cov": "opener ./.nyc_output/coverage/index.html"
   },
   "prettier": {
@@ -62,5 +67,9 @@
     "singleQuote": true,
     "printWidth": 120,
     "arrowParens": "avoid"
+  },
+  "babel": {
+    "presets": [],
+    "plugins": []
   }
 }

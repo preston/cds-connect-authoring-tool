@@ -1,11 +1,17 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
-import { render } from 'utils/test-utils';
+import { render, waitFor } from 'utils/test-utils';
 import { Analytics } from 'components/base';
 
 describe('<Analytics />', () => {
   const renderComponent = (props = {}) =>
     render(<Analytics gtmKey="TEST-GTM-KEY" dapURL="http://example.org/dap" {...props} />);
+
+  // Clean up script tags between tests
+  afterEach(() => {
+    // Remove any script tags that might be left over from previous tests
+    const scripts = document.head.querySelectorAll('script');
+    scripts.forEach(script => script.remove());
+  });
 
   it('renders a noscript tag when GTM/DAP is configured', () => {
     const { container } = renderComponent();
@@ -14,15 +20,24 @@ describe('<Analytics />', () => {
     expect(noscript).not.toBeNull();
   });
 
-  it('renders GTM and DAP script tags in HEAD when GTM/DAP is configured', () => {
+  it('renders GTM and DAP script tags in HEAD when GTM/DAP is configured', async () => {
     renderComponent();
-    const helmet = Helmet.peek();
 
-    expect(helmet.scriptTags).toHaveLength(2);
-    // First check inlined GTM script
-    expect(helmet.scriptTags[0].innerHTML).toMatch(/TEST-GTM-KEY/);
-    // Then check DAP script
-    expect(helmet.scriptTags[1].src).toEqual('http://example.org/dap');
+    await waitFor(() => {
+      // Only check script tags created by react-helmet-async
+      const reactHelmetScripts = document.head.querySelectorAll('script[data-rh="true"]');
+      expect(reactHelmetScripts).toHaveLength(2);
+
+      // First check inlined GTM script
+      const inlineGtmScript = Array.from(reactHelmetScripts).find(
+        script => script.innerHTML && script.innerHTML.includes('TEST-GTM-KEY')
+      );
+      expect(inlineGtmScript).toBeDefined();
+
+      // Then check DAP script
+      const dapScript = Array.from(reactHelmetScripts).find(script => script.src === 'http://example.org/dap');
+      expect(dapScript).toBeDefined();
+    });
   });
 
   it('does not render GTM iframe when GTM/DAP is not configured', () => {
@@ -31,9 +46,12 @@ describe('<Analytics />', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('does not render GTM and DAP script tags in HEAD when GTM/DAP is not configured', () => {
+  it('does not render GTM and DAP script tags in HEAD when GTM/DAP is not configured', async () => {
     renderComponent({ gtmKey: null, dapURL: null });
 
-    expect(document.head.querySelectorAll('script')).toHaveLength(0);
+    await waitFor(() => {
+      const reactHelmetScripts = document.head.querySelectorAll('script[data-rh="true"]');
+      expect(reactHelmetScripts).toHaveLength(0);
+    });
   });
 });

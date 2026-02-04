@@ -3,10 +3,9 @@
  * - calculates and adds calculatedInputTypes and displayInputTypes to details.functions
  *   based on details.functions.operands
  */
-'use strict';
-const _ = require('lodash');
+import _ from 'lodash';
 
-module.exports.id = 'libraries-with-inputtypes';
+export const id = 'libraries-with-inputtypes';
 
 const singularTypeMap = {
   Boolean: 'boolean',
@@ -182,7 +181,7 @@ function mapInputTypes(definitions) {
   return mappedDefinitions;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: libraries-with-inputtypes');
   var coll = this.db.collection('cqllibraries');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -226,7 +225,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

@@ -1,5 +1,5 @@
-const express = require('express');
-const auth = require('../handlers/authHandler');
+import express from 'express';
+import auth from '../handlers/authHandler.js';
 
 const AuthRouter = express.Router();
 
@@ -9,4 +9,4 @@ AuthRouter.route('/logout').get(auth.logout);
 
 AuthRouter.route('/user').get(auth.currentUser);
 
-module.exports = AuthRouter;
+export default AuthRouter;

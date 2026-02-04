@@ -1,8 +1,8 @@
-const express = require('express');
-const modifiers = require('../handlers/modifiersHandler');
+import express from 'express';
+import modifiers from '../handlers/modifiersHandler.js';
 const ModifiersRouter = express.Router();
 
 // Routes for /authoring/api/modifiers
 ModifiersRouter.route('/:artifact').get(modifiers.allGet);
 
-module.exports = ModifiersRouter;
+export default ModifiersRouter;

@@ -1,6 +1,6 @@
-const axios = require('axios');
-const _ = require('lodash');
-const config = require('../config');
+import axios from 'axios';
+import _ from 'lodash';
+import config from '../config.js';
 
 const VSAC_FHIR_ENDPOINT = config.get('terminologyService');
 
@@ -236,7 +236,7 @@ async function getOneValueSet(username, password) {
   return res.data;
 }
 
-module.exports = {
+export default {
   getValueSet,
   searchForValueSets,
   getCode,

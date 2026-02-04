@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   async up(db, client) {
     console.log('This migration adds an empty suggestions array to each recommendation');
     const allArtifacts = await db.collection('artifacts').find({}).toArray();

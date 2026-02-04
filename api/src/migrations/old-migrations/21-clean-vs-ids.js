@@ -5,9 +5,8 @@
  * id. Since we prefer non-version-specific value sets anyway, this migration
  * strips the version suffix from the id.
  */
-'use strict';
 
-module.exports.id = 'clean-vs-ids';
+export const id = 'clean-vs-ids';
 
 function updateTree(element) {
   let updated = false;
@@ -40,7 +39,7 @@ function updateElement(element) {
   return updated;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: clean-vs-ids');
   var coll = this.db.collection('artifacts');
   // Since db operations are asynchronous, use promises to ensure all updates happen before we call done().
@@ -103,6 +102,6 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   done();
 };

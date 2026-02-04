@@ -1,8 +1,8 @@
-const Artifact = require('../models/artifact');
-const CQLLibrary = require('../models/cqlLibrary');
-const { sendUnauthorized } = require('./common');
+import { default as Artifact } from '../models/artifact.js';
+import { default as CQLLibrary } from '../models/cqlLibrary.js';
+import { sendUnauthorized } from './common.js';
 
-module.exports = {
+export default {
   allGet,
   singleGet,
   singlePost,

@@ -1,0 +1,93 @@
+{
+  "resourceType": "Bundle",
+  "id": "PatientBundle1",
+  "meta": {
+    "tag": [
+      {
+        "code": "test"
+      }
+    ]
+  },
+  "entry": [
+    {
+      "fullUrl": "http://example.org/Patient/Patient1",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "Patient1",
+        "name": [
+          {
+            "given": [
+              "John"
+            ],
+            "family": "Doe-1"
+          }
+        ],
+        "birthDate": "1970-01-01",
+        "gender": "male"
+      }
+    },
+    {
+      "fullUrl": "http://example.org/Condition/Condition1Diabetes",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "Condition1Diabetes",
+        "subject": {
+          "reference": "Patient/Patient1"
+        },
+        "code": {
+          "coding": [
+            {
+              "code": "E11.21",
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "display": "Type 2 diabetes mellitus with diabetic nephropathy"
+            }
+          ]
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "code": "active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "code": "confirmed"
+            }
+          ]
+        },
+        "onsetDateTime": "2020-01-01T00:00:00Z",
+        "recordedDate": "2020-01-01T00:00:00Z"
+      }
+    },
+    {
+      "fullUrl": "http://example.org/Observation/Observation1CVDRisk",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "Observation1CVDRisk",
+        "valueQuantity": {
+          "value": 7.5,
+          "unit": "%",
+          "system": "http://unitsofmeasure.org",
+          "code": "%"
+        },
+        "subject": {
+          "reference": "Patient/Patient1"
+        },
+        "code": {
+          "coding": [
+            {
+              "code": "79423-0",
+              "system": "http://loinc.org",
+              "display": "Cardiovascular disease 10Y risk [Likelihood] ACC-AHA Pooled Cohort by Goff 2013"
+            }
+          ]
+        },
+        "status": "final",
+        "effectiveDateTime": "2024-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "type": "collection"
+}

@@ -1,11 +1,10 @@
 /**
  * Migrates artifacts with fhirVersion 4.0.0 to 4.0.x if they don't have any external libraries
  */
-'use strict';
 
-module.exports.id = 'change-400-to-40x';
+export const id = 'change-400-to-40x';
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: change-400-to-40x');
   let coll = this.db.collection('artifacts');
   let cql = this.db.collection('cqllibraries');
@@ -58,6 +57,6 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   done();
 };

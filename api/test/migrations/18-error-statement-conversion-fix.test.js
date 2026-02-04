@@ -1,5 +1,5 @@
-const { fixArtifactErrorStatement } = require('../../src/migrations/old-migrations/18-error-statement-conversion-fix');
-const { importChaiExpect } = require('../utils');
+import { fixArtifactErrorStatement } from '../../src/migrations/old-migrations/18-error-statement-conversion-fix.js';
+import { importChaiExpect } from '../utils.js';
 
 describe('Error Statement Conversion Fix', () => {
   let expect;

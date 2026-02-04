@@ -1,7 +1,7 @@
 /**
  * This is a simple command-line class for testing the VSAC API client.
  */
-const FHIRClient = require('./FHIRClient');
+import FHIRClient from './FHIRClient.js';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 

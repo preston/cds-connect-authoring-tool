@@ -12,7 +12,7 @@ describe('<Artifact />', () => {
     render(<Artifact />);
 
     expect(await screen.findByText('No artifacts to show.')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Create New Artifact' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create New Library' })).toBeInTheDocument();
   });
 
   it('shows a table when there is data', async () => {

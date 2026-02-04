@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   observations: {
     total_cholesterol: {
       // https://ushik.ahrq.gov/ViewItemDetails?system=mu&itemKey=211967000

@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Provider } from 'react-redux';
-import { Route, Switch, Redirect } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { Route, Routes, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
-
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { Artifact } from 'components/artifact';
 import { Tester } from 'components/testing';
@@ -31,33 +31,23 @@ const Root = ({ store }) => (
       <ThemeProvider theme={lightTheme}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <QueryClientProvider client={queryClient}>
-            <App>
-              <Switch>
-                <Route exact path="/">
-                  <Landing />
-                </Route>
-                <PrivateRoute path="/build/:id" component={Workspace} />
-                <PrivateRoute path="/build" component={Workspace} />
-                <PrivateRoute path="/artifacts" component={Artifact} />
-                <PrivateRoute path="/testing" component={Tester} />
-                <Route path="/documentation/tutorial">
-                  <Documentation activeTab={1} />
-                </Route>
-                <Route path="/documentation/datatypes">
-                  <Documentation activeTab={2} />
-                </Route>
-                <Route path="/documentation/terms">
-                  <Documentation activeTab={3} />
-                </Route>
-                <Route path="/documentation">
-                  <Documentation />
-                </Route>
-                <Redirect from="/userguide" to="/documentation" />
-                <Route path="*">
-                  <ErrorPage errorType="notFound" />
-                </Route>
-              </Switch>
-            </App>
+            <HelmetProvider>
+              <App>
+                <Routes>
+                  <Route path="" element={<Landing />} />
+                  <Route path="build/:id" element={<PrivateRoute component={Workspace} />} />
+                  <Route path="build" element={<PrivateRoute component={Workspace} />} />
+                  <Route path="artifacts" element={<PrivateRoute component={Artifact} />} />
+                  <Route path="testing" element={<PrivateRoute component={Tester} />} />
+                  <Route path="documentation/tutorial" element={<Documentation activeTab={1} />} />
+                  <Route path="documentation/datatypes" element={<Documentation activeTab={2} />} />
+                  <Route path="documentation/terms" element={<Documentation activeTab={3} />} />
+                  <Route path="documentation" element={<Documentation />} />
+                  <Route path="userguide" element={<Navigate to="/documentation" replace />} />
+                  <Route path="*" element={<ErrorPage errorType="notFound" />} />
+                </Routes>
+              </App>
+            </HelmetProvider>
           </QueryClientProvider>
         </LocalizationProvider>
       </ThemeProvider>

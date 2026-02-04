@@ -1,7 +1,5 @@
-const express = require('express');
-const routes = require('../src/routes');
-
-module.exports = { setupExpressApp, importChaiExpect };
+import express from 'express';
+import routes from '../src/routes.js';
 
 class Options {
   constructor() {
@@ -38,3 +36,5 @@ async function importChaiExpect() {
   chai.use(chaiExclude.default);
   return chai.expect;
 }
+
+export { setupExpressApp, importChaiExpect };

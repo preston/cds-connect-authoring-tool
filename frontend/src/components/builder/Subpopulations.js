@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, CircularProgress } from '@mui/material';
 import _ from 'lodash';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 
 import fetchTemplates from 'queries/fetchTemplates';
@@ -21,7 +21,9 @@ const Subpopulations = ({
   updateSubpopulations
 }) => {
   const artifact = useSelector(state => state.artifacts.artifact);
-  const { data: templates, isLoading: isTemplatesLoading } = useQuery('templates', () => fetchTemplates(), {
+  const { data: templates, isLoading: isTemplatesLoading } = useQuery({
+    queryKey: ['templates'],
+    queryFn: () => fetchTemplates(),
     staleTime: Infinity
   });
 

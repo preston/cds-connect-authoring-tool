@@ -9,4 +9,4 @@ class CQLLibraryGroup {
   }
 }
 
-module.exports = { CQLLibraryGroup };
+export { CQLLibraryGroup };

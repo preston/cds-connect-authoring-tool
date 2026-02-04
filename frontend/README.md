@@ -4,21 +4,19 @@
 
 The Clinical Decision Support (CDS) Authoring Tool is a web-based application aimed at simplifying the creation of production-ready CQL code. The project is based on "concept templates" (e.g. gender, HDL Cholesterol, etc.), which allow for additional clinical concepts to be included in the future. Concept modifiers are included to allow for more flexible definitions (e.g. most recent, value comparisons, etc.).
 
-The CDS Authoring Tool is part of the [CDS Connect](https://cds.ahrq.gov/cdsconnect) project, sponsored by the [Agency for Healthcare Research and Quality](https://www.ahrq.gov/) (AHRQ), and initially developed under contract with AHRQ by MITRE's [Health FFRDC](https://www.mitre.org/our-impact/rd-centers/health-ffrdc).
+This version of the CDS Authoring Tool is developed by a community of HL7 stakeholders. The code was originally part of the [CDS Connect](https://cds.ahrq.gov/cdsconnect) project sponsored by the [Agency for Healthcare Research and Quality](https://www.ahrq.gov/) (AHRQ), and initially developed under contract with AHRQ by MITRE's [Health FFRDC](https://www.mitre.org/our-impact/rd-centers/health-ffrdc).
 
 ## Development Details
 
-This project provides the R (React) in the MERN application architecture. It was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). Relevant files are in the `src/` filter. Refer to the Create React App [User Guide](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md) for guidance on features and how to perform common tasks.
+This web frontend UI project is written in React. It was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). Relevant files are in the `src/` filter. Refer to the Create React App [User Guide](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md) for guidance on features and how to perform common tasks.
 
-To develop this project, you must install a Node.js LTS release, which will also install npm. On Mac OS X, this can be done through Homebrew:
+To develop this project you must install the version of Node referenced in [the Dockerfile](../Dockerfile) , which will also install npm. On macOS, for example, this can be done through (recommended) [Node Version Manager](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating) (NVM), Homebrew (brew), or manually, such as:
 
-```bash
+```sh
 brew install node # install node
 ```
 
-For other operating systems, use the instructions provided in each tool's online documentation.
-
-Once the prerequisite tools are installed, use npm to install the dependency libraries:
+Once installed, use npm to install the dependency libraries:
 
 ```
 npm install # installs this app's dependencies based on this project's package.json / package-lock.json

@@ -7,14 +7,13 @@
  * - changes case of parameter use id to paramCase
  * - changes value.type of base elements to 'parameter' if they use a parameter
  */
-'use strict';
 
 // NOTE: This dependency was removed from the api module in Oct 2023.
 // If this migration needs to be run, first run `npm install change-case`
 // to add the dependency back.
-const changeCase = require('change-case');
+import changeCase from 'change-case';
 
-module.exports.id = 'parameter-to-updatedType';
+export const id = 'parameter-to-updatedType';
 
 const parameterTypeMap = {
   Boolean: 'boolean',
@@ -117,7 +116,7 @@ function getOriginalBaseElement(instance, baseElements) {
   return instance;
 }
 
-module.exports.up = function (done) {
+export const up = function (done) {
   this.log('Migrating: parameter-to-updatedType');
   var coll = this.db.collection('artifacts');
   // NOTE: We can't use the special $[] operator since we're not yet on Mongo 3.6.
@@ -191,7 +190,7 @@ module.exports.up = function (done) {
   );
 };
 
-module.exports.down = function (done) {
+export const down = function (done) {
   // use this.db for MongoDB communication, and this.log() for logging
   done();
 };

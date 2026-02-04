@@ -39,10 +39,10 @@ const WorkspaceHeader = ({ handleDownloadArtifact, handleSaveArtifact, statusMes
 
   const handleDownload = async version => {
     setMenuAnchorEl(null);
-    const { elmErrors } = await handleDownloadArtifact(artifact, { name: 'FHIR', version });
-    if (elmErrors) {
-      setElmErrors(elmErrors);
-      if (elmErrors.length > 0) {
+    const result = await handleDownloadArtifact(artifact, { name: 'FHIR', version });
+    if (result?.elmErrors) {
+      setElmErrors(result.elmErrors);
+      if (result.elmErrors.length > 0) {
         setShowElmErrorModal(true);
       }
     }
